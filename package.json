@@ -1,0 +1,51 @@
+{
+  "name": "anitachatbot-odontologa",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsx ./src/app.ts",
+    "lint": "eslint . --no-ignore",
+    "dev": "nodemon --exec tsx ./src/app.ts",
+    "build": "tsc",
+    "pm2:start": "pm2 start dist/app.js --name chatbot-odontologa",
+    "pm2:stop": "pm2 stop chatbot-odontologa",
+    "pm2:restart": "pm2 restart chatbot-odontologa",
+    "pm2:delete": "pm2 delete chatbot-odontologa",
+    "pm2:logs": "pm2 logs chatbot-odontologa",
+    "pm2:restart-server:start": "pm2 start restart-server.sh --interpreter bash --name restart-server",
+    "pm2:restart-server:logs": "pm2 logs restart-server",
+    "pm2:status": "pm2 status",
+    "pm2:setup": "pm2 startup && pm2 save",
+    "server:deploy": "npm run pm2:restart-server:start && npm run pm2:status && npm run pm2:setup"
+  },
+  "keywords": [],
+  "dependencies": {
+    "@builderbot/bot": "1.3.14",
+    "@builderbot/provider-baileys": "1.3.14",
+    "@builderbot/database-mongo": "1.3.14",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "jimp": "^0.16.13",
+    "sharp": "^0.34.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@typescript-eslint/eslint-plugin": "^7.4.0",
+    "@typescript-eslint/parser": "^7.4.0",
+    "eslint": "^8.52.0",
+    "eslint-plugin-builderbot": "latest",
+    "rollup": "^4.10.0",
+    "nodemon": "^3.1.0",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.3",
+    "@types/express": "^5.0.3",
+    "ts-node": "^10.9.2"
+  },
+  "author": "",
+  "license": "ISC"
+}

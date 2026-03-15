@@ -1,0 +1,13 @@
+dist/*
+node_modules
+.env
+
+*_sessions
+*tokens
+.wwebjs*
+
+*.log
+*qr.png
+*.txt
+pnpm-lock.yaml
+*yarn
