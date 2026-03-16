@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "tsx ./src/app.ts",
+    "start:server": "bash start-server.sh",
+    "start:server:win": "powershell -ExecutionPolicy Bypass -File start-server.ps1",
     "lint": "eslint . --no-ignore",
     "dev": "nodemon --exec tsx ./src/app.ts",
     "build": "tsc",
@@ -14,8 +16,8 @@
     "pm2:restart": "pm2 restart chatbot-odontologa",
     "pm2:delete": "pm2 delete chatbot-odontologa",
     "pm2:logs": "pm2 logs chatbot-odontologa",
-    "pm2:restart-server:start": "pm2 start restart-server.sh --interpreter bash --name restart-server",
-    "pm2:restart-server:logs": "pm2 logs restart-server",
+    "pm2:restart-server:start": "pm2 start restart-server.sh --interpreter bash --name restart-server-odontologa",
+    "pm2:restart-server:logs": "pm2 logs restart-server-odontologa",
     "pm2:status": "pm2 status",
     "pm2:setup": "pm2 startup && pm2 save",
     "server:deploy": "npm run pm2:restart-server:start && npm run pm2:status && npm run pm2:setup"

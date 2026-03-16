@@ -1,21 +1,32 @@
 #!/bin/bash
 
-interval=600 # en segundos
+# ============================================
+# Script de reinicio automático - Od. Villalba
+# Reinicia el bot cada 10 minutos o si detecta errores
+# ============================================
+
+interval=600 # en segundos (10 minutos)
 restart_count=0
 log_file="restart-server.log"
+PORT=3010  # Puerto del bot Od. Villalba
+EXPRESS_PORT=3011  # Puerto Express
 
 while true; do
     restart_count=$((restart_count+1))
     timestamp=$(date +"%Y-%m-%d %H:%M:%S")
     echo "[$timestamp] Reinicio #$restart_count" >> "$log_file"
-    echo "Matando procesos en el puerto 3008..."
-    fuser -k 3008/tcp 2>/dev/null
-    echo "Liberando el puerto 3008 si está ocupado..."
-    PID=$(sudo lsof -t -i:3008)
-    if [ ! -z "$PID" ]; then
-      sudo kill -9 $PID
-      echo "Proceso $PID eliminado."
-    fi
+    
+    # Liberar puertos si están ocupados
+    echo "Liberando puertos $PORT y $EXPRESS_PORT si están ocupados..."
+    for port in $PORT $EXPRESS_PORT; do
+        fuser -k $port/tcp 2>/dev/null
+        PID=$(lsof -t -i:$port 2>/dev/null)
+        if [ ! -z "$PID" ]; then
+            kill -9 $PID 2>/dev/null || sudo kill -9 $PID 2>/dev/null
+            echo "Proceso $PID en puerto $port eliminado."
+        fi
+    done
+    
     npm run dev &
     server_pid=$!
 
