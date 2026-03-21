@@ -12,6 +12,7 @@ _Nada en progreso actualmente._
 
 ## 🟡 PENDIENTE (próximas actualizaciones)
 
+- [ ] **CitaMedicaBeta frontend — badge tipo de consulta**: En la tarjeta de consultas del dashboard, agregar un subtítulo/badge que muestre "Primera visita", "Control" o "Emergencia" según el tipo de turno. El campo `description` del appointment ya contiene el tipo enviado por ANITA. Proyecto: `C:\Users\JorgeHaraDevs\Desktop\CitaMedicaBeta`
 - [ ] **Flujo de cancelación de turno**: paciente escribe "cancelar mi turno" → ANITA busca el evento en Google Calendar por número de teléfono y lo elimina → slot queda libre para nuevas reservas. CitaMedicaBeta se actualiza manualmente desde el dashboard. (Por ahora la cancelación se gestiona manualmente desde Google Calendar o CitaMedicaBeta.)
 - [ ] **Instalar gentle-ia**: Integrar `gentle-ia` (https://github.com/Gentleman-Programming/gentle-ai)
 - [ ] **Flujo de IA conversacional**: respuestas libres del consultorio (precio, obras sociales, dudas generales)
