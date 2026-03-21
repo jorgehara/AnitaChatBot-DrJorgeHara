@@ -12,7 +12,19 @@ _Nada en progreso actualmente._
 
 ## 🟡 PENDIENTE (próximas actualizaciones)
 
-- [ ] **CitaMedicaBeta frontend — badge tipo de consulta**: En la tarjeta de consultas del dashboard, agregar un subtítulo/badge que muestre "Primera visita", "Control" o "Emergencia" según el tipo de turno. El campo `description` del appointment ya contiene el tipo enviado por ANITA. Proyecto: `C:\Users\JorgeHaraDevs\Desktop\CitaMedicaBeta`
+### Estratégico / Producto
+
+- [ ] **Template multi-tenant "Odontología"**: Crear un template/configuración específica para odontólogos en CitaMedicaBeta que incluya:
+  - Badge de tipo de consulta (Primera cita/Control/Emergencia) en tarjetas del dashboard
+  - Configuración de flows del chatbot ANITA (nuevo paciente ATM/Bruxismo 60min, controles 30/60min)
+  - Campos específicos: estudios previos, uso de placa dental, tipo de control
+  - Sistema de detección automática por keywords + duración
+  - **Objetivo**: Facilitar onboarding de nuevos odontólogos clientes con la misma necesidad que Od. Villalba
+  - **Ubicación**: `CitaMedicaBeta` + template del chatbot ANITA
+  - **Beneficio**: Escalar rápidamente a otros profesionales de odontología (ATM, bruxismo, ortodoncia)
+
+### Funcionalidad
+
 - [ ] **Flujo de cancelación de turno**: paciente escribe "cancelar mi turno" → ANITA busca el evento en Google Calendar por número de teléfono y lo elimina → slot queda libre para nuevas reservas. CitaMedicaBeta se actualiza manualmente desde el dashboard. (Por ahora la cancelación se gestiona manualmente desde Google Calendar o CitaMedicaBeta.)
 - [ ] **Instalar gentle-ia**: Integrar `gentle-ia` (https://github.com/Gentleman-Programming/gentle-ai)
 - [ ] **Flujo de IA conversacional**: respuestas libres del consultorio (precio, obras sociales, dudas generales)
@@ -23,6 +35,7 @@ _Nada en progreso actualmente._
 
 ## ✅ COMPLETADO
 
+### Setup y Flows
 - [x] Setup inicial del proyecto BuilderBot
 - [x] PRD del flujo de atención al paciente (`PRD-FLUJO-ATENCION.md`)
 - [x] `src/utils/calendarService.ts` — Google Calendar (freeBusy + createEvent), Lun–Jue 15–20hs BsAs
@@ -35,6 +48,12 @@ _Nada en progreso actualmente._
 - [x] Variables de entorno: `ANTHROPIC_API_KEY`, `GOOGLE_CALENDAR_ID`, `GOOGLE_SERVICE_ACCOUNT_PATH`, `EMERGENCY_PHONE_NUMBER`
 - [x] Console.logs de debug en todos los servicios y flows
 - [x] Fix credenciales Google: configurable via `GOOGLE_SERVICE_ACCOUNT_JSON` o `GOOGLE_SERVICE_ACCOUNT_PATH`
+
+### Dashboard CitaMedicaBeta (2026-03-21)
+- [x] **Badge tipo de consulta en tarjetas**: Muestra "Primera cita" (verde), "Control" (azul) o "Emergencia" (rojo) al lado del nombre del paciente. Detección automática por keywords en `description`. SOLO visible para Od. Melina Villalba (condicional por `clinicName`).
+  - Backend: agregado campo `description` en `appointmentController.js` línea 347
+  - Frontend: funciones `getAppointmentTypeLabel()` y `getTypeBadgeStyle()` en `SimpleAppointmentList.tsx`
+  - Multi-tenant: condicional `clinicName === 'Od. Melina Villalba'` para no afectar Dr. Kulinka
 
 ---
 
