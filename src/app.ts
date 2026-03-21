@@ -30,6 +30,9 @@ import { getFallbackSlots } from './utils/fallbackData';
 import { APP_CONFIG } from './config/app';
 import appointmentService from './utils/appointmentService';
 import sobreturnoService from './utils/sobreturnoService';
+import { mainMenuFlow } from './flows/mainMenu.flow';
+import { newPatientFlow } from './flows/newPatient.flow';
+import { controlFlow } from './flows/control.flow';
 
 interface APIResponse {
     success: boolean;
@@ -1719,12 +1722,12 @@ export const publicBookingLinkFlow = addKeyword(['bazinga', 'link', 'enlace'])
 
 const main = async () => {
     const adapterFlow = createFlow([
-        // Flujos principales
-        cancelFlow,          // PRIMERO: captura "cancelar" en cualquier momento fuera de capture
-        //sobreTurnosTemporario,  // DESHABILITADO - Od. Villalba maneja sobreturnos personalmente
-        //bookSobreturnoFlow,     // DESHABILITADO - Od. Villalba maneja sobreturnos personalmente
-        welcomeFlow,         // Se activa con saludos y muestra horarios automáticamente
-        //publicBookingLinkFlow,  // DESHABILITADO - Od. Villalba maneja links personalmente
+        // Flujos principales — nuevo sistema Google Calendar + Haiku
+        cancelFlow,          // PRIMERO: captura "cancelar" en cualquier momento
+        mainMenuFlow,        // Menú de bienvenida con 3 opciones
+        newPatientFlow,      // Flujo paciente nuevo ATM/Bruxismo (60 min)
+        controlFlow,         // Flujo control/seguimiento (30 o 60 min)
+        // Legacy (sin registrar en el nuevo flujo pero se mantienen)
         clientDataFlow,
         goodbyeFlow,
         adminFlow

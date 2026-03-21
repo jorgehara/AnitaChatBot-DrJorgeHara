@@ -4,6 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## 🚨 PRIMERA ACCIÓN OBLIGATORIA AL INICIAR SESIÓN
+
+**ANTES de responder cualquier consulta, Claude DEBE:**
+
+1. **Leer `TAREAS_PENDIENTES.md`** en la raíz del proyecto
+2. Identificar qué estaba en progreso y qué queda pendiente
+3. Informar al usuario del estado actual si es relevante
+
+```
+Read: TAREAS_PENDIENTES.md
+```
+
+Sin este paso, Claude NO tiene contexto de dónde se quedó el trabajo anterior.
+
+---
+
 ## ⚠️ PROTOCOLO OBLIGATORIO DE TRABAJO
 
 **CONTEXTO CRÍTICO**: Este proyecto es el chatbot ANITA que está en **PRODUCCIÓN** integrado con CitaMedicaBeta. Todos los cambios son pequeños, incrementales y quirúrgicos. El cliente solicita mejoras sutiles o complementos al código existente. Un error cuesta días de trabajo y afecta a pacientes reales.
