@@ -18,12 +18,14 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
         '_En cualquier momento podés escribir *cancelar* para salir_',
         { capture: true },
         async (ctx, { state, flowDynamic }) => {
+            console.log(`[CONTROL] Paso 1 — Nombre recibido: "${ctx.body}"`);
             if (ctx.body.trim().toLowerCase() === 'cancelar') {
                 await state.clear();
                 await flowDynamic('❌ Reserva cancelada. ¡Hasta pronto! 👋');
                 return;
             }
             await state.update({ clientName: ctx.body.trim() });
+            console.log(`[CONTROL] Nombre guardado: "${ctx.body.trim()}"`);
         }
     )
     .addAnswer(
@@ -34,6 +36,7 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
         '_Respondé con 1, 2 o 3_',
         { capture: true },
         async (ctx, { state, flowDynamic }) => {
+            console.log(`[CONTROL] Paso 2 — Tipo de visita: "${ctx.body}"`);
             if (ctx.body.trim().toLowerCase() === 'cancelar') {
                 await state.clear();
                 await flowDynamic('❌ Reserva cancelada. ¡Hasta pronto! 👋');
@@ -41,6 +44,7 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
             }
             const selected = CONTROL_TYPES[ctx.body.trim()];
             if (!selected) {
+                console.warn(`[CONTROL] Opción inválida: "${ctx.body.trim()}"`);
                 await flowDynamic('❌ Opción no válida. Por favor, respondé con 1, 2 o 3.');
                 return;
             }
@@ -48,14 +52,16 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
                 appointmentType: selected.label,
                 slotDuration: selected.duration,
             });
+            console.log(`[CONTROL] Tipo guardado: "${selected.label}" — duración: ${selected.duration} min`);
         }
     )
     .addAnswer(
         '⏳ *Buscando los próximos turnos disponibles...*',
         null,
         async (ctx, { state, flowDynamic }) => {
+            const slotDuration: 30 | 60 = (await state.get('slotDuration')) ?? 30;
+            console.log(`[CONTROL] Paso 3 — Consultando Google Calendar (${slotDuration} min)...`);
             try {
-                const slotDuration: 30 | 60 = (await state.get('slotDuration')) ?? 30;
                 const slots = await getAvailableSlots(slotDuration);
 
                 if (!slots.length) {
@@ -100,9 +106,11 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
             }
 
             const selectedNumber = parseInt(input);
+            console.log(`[CONTROL] Paso 4 — Selección: "${input}" → número: ${selectedNumber}`);
 
             // Texto libre → filtrar con Haiku
             if (isNaN(selectedNumber)) {
+                console.log('[CONTROL] Entrada de texto libre → llamando a Haiku para filtrar');
                 await flowDynamic('🔍 *Buscando turnos según tu preferencia...*');
                 try {
                     const filtered = await filterSlotsByPreference(slots, input);
@@ -130,6 +138,7 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
             }
 
             const selectedSlot = slots[selectedNumber - 1];
+            console.log(`[CONTROL] Slot seleccionado: ${selectedSlot.displayText}`);
             const clientName: string = (await state.get('clientName')) ?? '';
             const appointmentType: string = (await state.get('appointmentType')) ?? 'Control';
             const slotDuration: number = (await state.get('slotDuration')) ?? 30;

@@ -32,6 +32,7 @@ export async function filterSlotsByPreference(
     slots: AvailableSlot[],
     preferenceText: string
 ): Promise<AvailableSlot[]> {
+    console.log(`[HAIKU] filterSlotsByPreference — preferencia: "${preferenceText}", slots disponibles: ${slots.length}`);
     if (!slots.length) return slots;
 
     const slotsData = slots.map((s, i) => ({
@@ -41,6 +42,7 @@ export async function filterSlotsByPreference(
         display: s.displayText,
     }));
 
+    console.log(`[HAIKU] Enviando ${slotsData.length} slots a claude-haiku para filtrar`);
     const response = await client.messages.create({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 200,
@@ -61,13 +63,21 @@ Respondé ÚNICAMENTE el array JSON, sin texto adicional.`,
     });
 
     const content = response.content[0];
-    if (content.type !== 'text') return slots.slice(0, MAX_SLOTS_TO_SHOW);
+    console.log(`[HAIKU] Respuesta recibida — tipo: ${content.type}`);
+    if (content.type !== 'text') {
+        console.warn('[HAIKU] Respuesta no es texto — devolviendo primeros 8 slots');
+        return slots.slice(0, MAX_SLOTS_TO_SHOW);
+    }
 
+    console.log(`[HAIKU] Respuesta raw: "${content.text.trim()}"`);
     try {
         const indices: number[] = JSON.parse(content.text.trim());
+        console.log(`[HAIKU] Índices seleccionados por Haiku: [${indices.join(', ')}]`);
         const filtered = indices.map(i => slots[i]).filter(Boolean);
+        console.log(`[HAIKU] Slots filtrados resultantes: ${filtered.length}`);
         return filtered.length > 0 ? filtered : slots.slice(0, MAX_SLOTS_TO_SHOW);
-    } catch {
+    } catch (err) {
+        console.error('[HAIKU] Error parseando respuesta JSON:', err);
         return slots.slice(0, MAX_SLOTS_TO_SHOW);
     }
 }
