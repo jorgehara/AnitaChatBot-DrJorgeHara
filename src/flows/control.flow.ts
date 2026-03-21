@@ -2,6 +2,7 @@ import { addKeyword } from '@builderbot/bot';
 import { BaileysProvider as Provider } from '@builderbot/provider-baileys';
 import { getAvailableSlots, createCalendarEvent, AvailableSlot } from '../utils/calendarService';
 import { formatSlotsMessage, filterSlotsByPreference } from '../utils/haikuService';
+import { createCitaMedicaAppointment } from '../utils/citaMedicaService';
 
 const MAX_SHOWN = 8;
 
@@ -143,12 +144,20 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
             const appointmentType: string = (await state.get('appointmentType')) ?? 'Control';
             const slotDuration: number = (await state.get('slotDuration')) ?? 30;
 
+            const eventData = {
+                patientName: clientName,
+                appointmentType: `${appointmentType} (${slotDuration} min)`,
+                phone: ctx.from,
+            };
+
             try {
-                await createCalendarEvent(selectedSlot, {
-                    patientName: clientName,
-                    appointmentType: `${appointmentType} (${slotDuration} min)`,
-                    phone: ctx.from,
-                });
+                await createCalendarEvent(selectedSlot, eventData);
+
+                try {
+                    await createCitaMedicaAppointment(selectedSlot, eventData);
+                } catch (citaError) {
+                    console.error('[CONTROL] ⚠️ Error al registrar en CitaMedicaBeta (turno igualmente confirmado en Calendar):', citaError);
+                }
 
                 await flowDynamic(
                     '✅ *¡Control confirmado!* 🎉\n\n' +
