@@ -10,24 +10,30 @@ export const newPatientFlow = addKeyword<Provider, IDBDatabase>(['__new_patient_
     .addAction(async (ctx, { state, flowDynamic }) => {
         // Verificar si ya tenemos el nombre del state (viene del mainMenu)
         const existingName = await state.get('clientName');
+        
         if (existingName) {
-            console.log(`[NEW_PATIENT] Nombre ya detectado: "${existingName}" — saltando paso de captura`);
+            console.log(`[NEW_PATIENT] Nombre ya detectado: "${existingName}" — usando directamente`);
             await state.update({ appointmentType: 'Primera consulta ATM/Bruxismo' });
-            await flowDynamic(`¡Perfecto, ${existingName}! 😊`);
-            return; // Sale del action, continúa al siguiente paso
+            await flowDynamic(`¡Genial ${existingName}! Para tu primera consulta necesito algunos datos 😊`);
+        } else {
+            console.log(`[NEW_PATIENT] Nombre NO detectado, preguntando...`);
+            await flowDynamic(
+                '¡Genial! Para tu primera consulta necesito algunos datos 😊\n\n' +
+                '¿Me decís tu *nombre y apellido* completo?\n\n' +
+                '_En cualquier momento podés escribir *cancelar* para salir_'
+            );
         }
     })
     .addAnswer(
-        '¡Genial! Para tu primera consulta necesito algunos datos 😊\n\n' +
-        '¿Me decís tu *nombre y apellido* completo?\n\n' +
-        '_En cualquier momento podés escribir *cancelar* para salir_',
+        '',
         { capture: true },
         async (ctx, { state, flowDynamic }) => {
-            // Si ya tiene nombre (de mainMenu), este paso se saltea
+            // Si ya tiene nombre (de mainMenu), este paso se saltea capturando un mensaje vacío
             const existingName = await state.get('clientName');
             if (existingName) {
-                console.log(`[NEW_PATIENT] Nombre ya existe, no capturamos de nuevo`);
-                return; // Skip capture
+                console.log(`[NEW_PATIENT] Nombre ya existe, continuando flujo`);
+                await state.update({ appointmentType: 'Primera consulta ATM/Bruxismo' });
+                return; // No captura nada, continúa
             }
 
             console.log(`[NEW_PATIENT] Paso 1 — Nombre recibido: "${ctx.body}"`);

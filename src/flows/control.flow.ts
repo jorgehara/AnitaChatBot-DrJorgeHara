@@ -16,23 +16,28 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
     .addAction(async (ctx, { state, flowDynamic }) => {
         // Verificar si ya tenemos el nombre del state (viene del mainMenu)
         const existingName = await state.get('clientName');
+        
         if (existingName) {
-            console.log(`[CONTROL] Nombre ya detectado: "${existingName}" — saltando paso de captura`);
-            await flowDynamic(`¡Hola ${existingName}! 😊`);
-            return; // Sale del action, continúa al siguiente paso
+            console.log(`[CONTROL] Nombre ya detectado: "${existingName}" — usando directamente`);
+            await flowDynamic(`¡Hola ${existingName}! Para tu control, necesito algunos datos 😊`);
+        } else {
+            console.log(`[CONTROL] Nombre NO detectado, preguntando...`);
+            await flowDynamic(
+                '¡Hola! Para tu control, necesito algunos datos 😊\n\n' +
+                '¿Me decís tu *nombre y apellido* completo?\n\n' +
+                '_En cualquier momento podés escribir *cancelar* para salir_'
+            );
         }
     })
     .addAnswer(
-        '¡Hola! Para tu control, necesito algunos datos 😊\n\n' +
-        '¿Me decís tu *nombre y apellido* completo?\n\n' +
-        '_En cualquier momento podés escribir *cancelar* para salir_',
+        '',
         { capture: true },
         async (ctx, { state, flowDynamic }) => {
             // Si ya tiene nombre (de mainMenu), este paso se saltea
             const existingName = await state.get('clientName');
             if (existingName) {
-                console.log(`[CONTROL] Nombre ya existe, no capturamos de nuevo`);
-                return; // Skip capture
+                console.log(`[CONTROL] Nombre ya existe, continuando flujo`);
+                return; // No captura nada, continúa
             }
 
             console.log(`[CONTROL] Paso 1 — Nombre recibido: "${ctx.body}"`);
