@@ -20,7 +20,8 @@
     "pm2:restart-server:logs": "pm2 logs restart-server-odontologa",
     "pm2:status": "pm2 status",
     "pm2:setup": "pm2 startup && pm2 save",
-    "server:deploy": "npm run pm2:restart-server:start && npm run pm2:status && npm run pm2:setup"
+    "server:deploy": "npm run pm2:restart-server:start && npm run pm2:status && npm run pm2:setup",
+    "qr": "bash get-qr.sh"
   },
   "keywords": [],
   "dependencies": {
