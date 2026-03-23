@@ -247,6 +247,7 @@ export async function getSlotsByCustomDate(
     
     // Máximo 7 días de búsqueda hacia adelante
     let attemptsLeft = 7;
+    let isFirstDate = true;
     
     while (attemptsLeft > 0) {
         const checkDateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
@@ -256,6 +257,13 @@ export async function getSlotsByCustomDate(
         const noonUtc = bsAsToUtc(currentYear, currentMonth, currentDay, 12, 0);
         const { dayOfWeek } = utcToBsAs(noonUtc);
         
+        // Si la fecha original no es día hábil, informar
+        if (isFirstDate && !WORK_DAYS.includes(dayOfWeek)) {
+            const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            console.log(`[CALENDAR] ⚠️  Fecha solicitada (${checkDateStr}) cae en ${DAY_NAMES[dayOfWeek]} (no laborable)`);
+        }
+        isFirstDate = false;
+        
         if (WORK_DAYS.includes(dayOfWeek)) {
             // Obtener slots de ese día
             const allSlots = await getAvailableSlots(durationMinutes);
@@ -263,8 +271,8 @@ export async function getSlotsByCustomDate(
             
             if (daySlots.length > 0) {
                 const message = checkDateStr === targetDate
-                    ? `Turnos disponibles para el ${formatDateSpanish(checkDateStr)}:`
-                    : `No hay turnos disponibles para el ${formatDateSpanish(targetDate)}. Te muestro los turnos del ${formatDateSpanish(checkDateStr)}:`;
+                    ? `📅 Turnos disponibles para el ${formatDateSpanish(checkDateStr)}:`
+                    : `⚠️ La fecha que solicitaste (${formatDateSpanish(targetDate)}) no está disponible.\n\n📅 Te muestro los turnos del ${formatDateSpanish(checkDateStr)}:`;
                 
                 console.log(`[CALENDAR] ✅ Encontrados ${daySlots.length} slots en ${checkDateStr}`);
                 return {

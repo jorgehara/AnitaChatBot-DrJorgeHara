@@ -90,12 +90,15 @@ export const customDateFlow = addKeyword<Provider, IDBDatabase>(['__custom_date_
                     console.log('[CUSTOM_DATE] ✅ Slots encontrados:', result.slots.length);
 
                     if (result.slots.length === 0) {
-                        console.log('[CUSTOM_DATE] ❌ Sin turnos disponibles');
+                        console.log('[CUSTOM_DATE] ❌ Sin turnos disponibles en próximos 7 días');
                         await flowDynamic(
-                            '😞 ' + result.message + '\n\n' +
-                            '📞 Comunicate al *3735604949* para coordinar un turno.'
+                            '😞 No hay turnos disponibles en los próximos días para la fecha que solicitaste.\n\n' +
+                            '💡 *Opciones*:\n' +
+                            '1️⃣ Escribí otra fecha (ej: "Lunes próximo", "31 de marzo")\n' +
+                            '2️⃣ Escribí *cancelar* para volver al menú\n' +
+                            '3️⃣ Comunicate al *3735604949* para coordinar directamente'
                         );
-                        await state.clear();
+                        // NO limpiamos el state para permitir reintentar
                         return;
                     }
 
