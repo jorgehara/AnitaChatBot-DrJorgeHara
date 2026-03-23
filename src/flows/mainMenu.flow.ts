@@ -1,13 +1,8 @@
-import { addKeyword } from '@builderbot/bot';
+import { addKeyword, EVENTS } from '@builderbot/bot';
 import { BaileysProvider as Provider } from '@builderbot/provider-baileys';
 import { newPatientFlow } from './newPatient.flow.js';
 import { controlFlow } from './control.flow.js';
 import { extractUserIntent } from '../utils/intentExtractor.js';
-
-const WELCOME_KEYWORDS = [
-    'hi', 'hello', 'hola', 'buenas', 'buenos días', 'buenas tardes',
-    'buenas noches', 'ho', 'ola', 'ole', 'turnos', 'turno',
-].map(k => k.toLowerCase()) as [string, ...string[]];
 
 const MENU_TEXT =
     '🦷 *¡Bienvenido al consultorio de la Od. Melina Villalba!* 🦷\n\n' +
@@ -18,7 +13,10 @@ const MENU_TEXT =
     '3️⃣ Tengo dolor / urgencia\n\n' +
     '_Respondé con el número de tu opción_';
 
-export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(WELCOME_KEYWORDS)
+// EVENTS.WELCOME se activa SOLO cuando BuilderBot no encuentra ningún capture activo
+// ni ningún flow que matchee la keyword. Es el comportamiento correcto para un menú
+// de bienvenida — nunca interrumpe flows en curso.
+export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(EVENTS.WELCOME)
     .addAction(async (ctx, { state, flowDynamic }) => {
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log('[MENU] 🚀 MENÚ PRINCIPAL ACTIVADO');
