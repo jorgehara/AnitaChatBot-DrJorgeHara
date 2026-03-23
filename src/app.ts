@@ -1192,7 +1192,9 @@ const welcomeFlow = addKeyword<Provider, IDBDatabase>(welcomeKeywords)
         const clientName = state.get('clientName');
         const socialWork = state.get('socialWork');
         const availableSlots = state.get('availableSlots');
-        if (clientName || socialWork || availableSlots) {
+        const slotsCache = await state.get('slotsCache');
+        const customDateMode = await state.get('customDateMode');
+        if (clientName || socialWork || availableSlots || (slotsCache && slotsCache.length > 0) || customDateMode) {
             // Hay un flujo activo, no interrumpir
             return;
         }
@@ -1425,6 +1427,16 @@ const welcomeFlow = addKeyword<Provider, IDBDatabase>(welcomeKeywords)
         }
     })
     .addAnswer('', { capture: true }, async (ctx, { gotoFlow, flowDynamic, state }) => {
+        // ⚠️ Guard doble: mismo patrón que mainMenuFlow
+        // El addAction bloquea el flow pero el addAnswer igual captura el siguiente mensaje
+        const _clientName = await state.get('clientName');
+        const _slotsCache = await state.get('slotsCache');
+        const _customDateMode = await state.get('customDateMode');
+        if (_clientName || (_slotsCache && _slotsCache.length > 0) || _customDateMode) {
+            console.log('[WELCOME] ⚠️ Guard en addAnswer — flujo activo, ignorando mensaje');
+            return;
+        }
+
         // Verificar si estamos esperando la opción de agendamiento
         const waitingForBookingOption = state.get('waitingForBookingOption');
         

@@ -19,12 +19,14 @@ export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(WELCOME_KEYWORDS)
         
         const clientName = await state.get('clientName');
         const slotsCache = await state.get('slotsCache');
+        const customDateMode = await state.get('customDateMode');
         
         console.log('[MENU] State check:');
         console.log('  - clientName:', clientName || '(vacío)');
         console.log('  - slotsCache:', slotsCache ? `${slotsCache.length} slots` : '(vacío)');
+        console.log('  - customDateMode:', customDateMode || false);
         
-        if (clientName || slotsCache) {
+        if (clientName || (slotsCache && slotsCache.length > 0) || customDateMode) {
             console.log('[MENU] ⚠️  Flujo activo detectado — no interrumpir');
             return;
         }
@@ -40,6 +42,16 @@ export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(WELCOME_KEYWORDS)
         '_Respondé con el número de tu opción_',
         { capture: true },
         async (ctx, { gotoFlow, flowDynamic, state }) => {
+            // ⚠️ Guard doble: el addAction bloquea el flow pero el addAnswer
+            // igual captura el siguiente mensaje. Re-chequeamos el state acá.
+            const activeClientName = await state.get('clientName');
+            const activeSlots = await state.get('slotsCache');
+            const activeCustomDate = await state.get('customDateMode');
+            if (activeClientName || (activeSlots && activeSlots.length > 0) || activeCustomDate) {
+                console.log('[MENU] ⚠️  Guard en addAnswer — flujo activo, ignorando mensaje');
+                return;
+            }
+
             const userMessage = ctx.body.trim();
             console.log('[MENU] 📝 PROCESANDO RESPUESTA DEL USUARIO');
             console.log('[MENU] Mensaje:', userMessage);
