@@ -1,6 +1,6 @@
 # Guía de Agentes para AnitaByCitaMedica (ANITA Chatbot)
 
-> **ATENCIÓN**: Este documento fue actualizado el 2026-02-21 para reflejar el estado real del código. La versión anterior tenía información desactualizada (flows inexistentes).
+> **ATENCIÓN**: Este documento fue actualizado el 2026-03-23 para reflejar el estado real del código y los gotchas de BuilderBot descubiertos en producción.
 
 Este documento proporciona una visión general del proyecto AnitaByCitaMedica para que los agentes de Claude Code puedan entender rápidamente la estructura y trabajar de manera eficiente en futuras tareas.
 
@@ -287,12 +287,44 @@ Implementación completa de reserva directa (muestra disponibles, usuario elige 
 ## Archivos de Referencia Clave (en orden de lectura)
 
 1. **CLAUDE.md** — Protocolo de trabajo obligatorio
-2. **src/app.ts** — Todos los flows activos y lógica de reserva (inline)
-3. **src/utils/sobreturnoService.ts** — Lógica de sobreturnos
-4. **src/flows/sobreturnoFlow.ts** — Flow de sobreturno (inactivo, referencia)
-5. **src/utils/appointmentService.ts** — Lógica de turnos normales
-6. **src/config/axios.ts** — Configuración HTTP con retry
+2. **src/app.ts** — Flows legacy + clientDataFlow + goodbyeFlow + adminFlow
+3. **src/flows/mainMenu.flow.ts** — Menú principal + extracción de intención (Haiku)
+4. **src/flows/newPatient.flow.ts** — Primera consulta ATM/Bruxismo (60 min)
+5. **src/flows/control.flow.ts** — Control/seguimiento (30 min)
+6. **src/flows/customDate.flow.ts** — Búsqueda por fecha personalizada (leaf flow)
+7. **src/utils/intentExtractor.ts** — extractUserIntent() + extractDateIntent() vía Claude Haiku
+8. **src/utils/calendarService.ts** — getTodayAndTomorrowSlots() + getSlotsByCustomDate()
+9. **src/utils/citaMedicaService.ts** — createCitaMedicaAppointment() → POST /appointments
+10. **src/utils/sobreturnoService.ts** — Lógica de sobreturnos (legacy, inactivo)
+11. **src/config/axios.ts** — Configuración HTTP con retry
 
 ---
 
-**Última actualización**: 2026-02-21
+## ⚠️ BuilderBot Gotchas Críticos (descubiertos en producción)
+
+### 1. Flow Terminal Bug — El último capture DEBE ser self-contained
+
+El último `addAnswer` con `capture: true` en una cadena de flows NO puede delegar a otro flow. Debe crear, confirmar y limpiar state INLINE. Si solo actualiza state y termina, el bot queda **mudo sin errores**.
+
+**Caso real (bug corregido 2026-03-23):** `customDate.flow.ts` segundo addAnswer guardaba el slot y terminaba. Fix: ahora llama directamente a `createCitaMedicaAppointment()`.
+
+### 2. gotoFlow() + capture Bug
+
+`addAnswer` con `capture: true` NO recibe mensajes si viene inmediatamente después de `gotoFlow()`. Solución: capturar todos los datos ANTES de hacer gotoFlow(), o usar addAction + addAnswer vacío.
+
+### 3. Guard para evitar flujos dobles
+
+Si dos flows tienen keywords iguales, ambos se disparan. Guard en `addAction`:
+```typescript
+const clientName = await state.get('clientName');
+const slotsCache = await state.get('slotsCache');
+if (clientName || slotsCache) return; // flujo activo, no interrumpir
+```
+
+### 4. State como único canal entre flows
+
+La cadena `mainMenu → newPatient → customDate` funciona porque cada flow lee del state lo que puso el anterior. `customDate` lee `clientName`, `appointmentType`, `hasStudies`, `usesDevice` — puestos por mainMenu y newPatient. Si state se limpia en el medio, el booking se crea con datos vacíos.
+
+---
+
+**Última actualización**: 2026-03-23
