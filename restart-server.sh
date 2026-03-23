@@ -5,10 +5,8 @@
 # Reinicia el bot cada 10 minutos o si detecta errores
 # ============================================
 
-# Cargar NVM para usar Node v20
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-nvm use 20
+# Usar Node v20 con path absoluto (PM2 no carga NVM profile)
+export PATH="/home/jorgeharadevs/.nvm/versions/node/v20.19.5/bin:$PATH"
 echo "Now using node $(node -v) (npm v$(npm -v))"
 
 # Aumentar límite de archivos abiertos
