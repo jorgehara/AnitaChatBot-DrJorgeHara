@@ -91,7 +91,7 @@ export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(EVENTS.WELCOME)
                         'Respondé con *1* o *2*'
                     );
                 } else if (lowerMessage.includes('dolor') || lowerMessage.includes('urgencia') || lowerMessage.includes('emergencia')) {
-                    const emergencyPhone = process.env.EMERGENCY_PHONE_NUMBER || 'XXXXXXXXXX';
+                    const emergencyPhone = process.env.EMERGENCY_PHONE_NUMBER || '3794051686';
                     await flowDynamic(
                         '😟 Entiendo que estás con dolor.\n\n' +
                         'Para casos de urgencia, comunicate directamente con la Dra. Villalba:\n\n' +
@@ -120,7 +120,7 @@ export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(EVENTS.WELCOME)
             await state.update({ appointmentType: option === '1' ? 'Primera consulta ATM/Bruxismo' : 'Control o seguimiento' });
 
             if (option === '3') {
-                const emergencyPhone = process.env.EMERGENCY_PHONE_NUMBER || 'XXXXXXXXXX';
+                const emergencyPhone = process.env.EMERGENCY_PHONE_NUMBER || '3794051686';
                 await flowDynamic(
                     '😟 Entiendo que estás con dolor.\n\n' +
                     'Para casos de urgencia, comunicate directamente con la Dra. Villalba:\n\n' +

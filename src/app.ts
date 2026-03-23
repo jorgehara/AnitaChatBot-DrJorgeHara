@@ -1126,7 +1126,7 @@ export const clientDataFlow = addKeyword(['datos_cliente'])
 export const cancelFlow = addKeyword(['cancelar', 'cancel', 'salir'])
     .addAction(async (ctx, { flowDynamic, state }) => {
         await state.clear();
-        await flowDynamic('❌ *Reserva cancelada.* Si necesitas más ayuda, no dudes en contactarnos nuevamente.\n🤗 ¡Que tengas un excelente día!\n📞 *XXXXXXXXXX*');
+        await flowDynamic('❌ *Reserva cancelada.* Si necesitas más ayuda, no dudes en contactarnos nuevamente.\n🤗 ¡Que tengas un excelente día!\n');
     });
 
 // Flujo para agendar una consulta odontológica
