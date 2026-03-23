@@ -1,6 +1,6 @@
-import { axiosInstance } from '../config/axios';
-import cache from './cache';
-import { getFallbackSlots } from './fallbackData';
+import { axiosInstance } from '../config/axios.js';
+import cache from './cache.js';
+import { getFallbackSlots } from './fallbackData.js';
 
 interface AppointmentSlot {
     displayTime: string;

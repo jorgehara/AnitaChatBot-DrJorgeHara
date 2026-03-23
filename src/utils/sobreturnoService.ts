@@ -1,5 +1,5 @@
-import { axiosInstance } from '../config/axios';
-import cache from './cache';
+import { axiosInstance } from '../config/axios.js';
+import cache from './cache.js';
 
 export interface SobreturnoResponse {
     sobreturnoNumber: number;

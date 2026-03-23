@@ -1,4 +1,4 @@
-import { AvailableSlot, PatientEventData } from './calendarService';
+import { AvailableSlot, PatientEventData } from './calendarService.js';
 
 const API_URL = process.env.API_URL!;
 const CHATBOT_API_KEY = process.env.CHATBOT_API_KEY!;

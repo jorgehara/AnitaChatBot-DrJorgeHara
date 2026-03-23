@@ -2,7 +2,7 @@ import { addKeyword } from '@builderbot/bot';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 
-import appointmentService from '../utils/appointmentService';
+import appointmentService from '../utils/appointmentService.js';
 import { formatearFechaEspanol } from '~/utils/dateFormatter';
 
 interface TimeSlot {

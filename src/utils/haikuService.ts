@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { AvailableSlot } from './calendarService';
+import { AvailableSlot } from './calendarService.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 

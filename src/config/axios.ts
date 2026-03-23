@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { APP_CONFIG } from './app';
+import { APP_CONFIG } from './app.js';
 
 const API_URL = APP_CONFIG.API_URL;
 const CHATBOT_API_KEY = process.env.CHATBOT_API_KEY || '';

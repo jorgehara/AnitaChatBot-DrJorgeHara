@@ -1,4 +1,4 @@
-import { axiosInstance } from '../config/axios';
+import { axiosInstance } from '../config/axios.js';
 import { format } from 'date-fns';
 
 async function testSobreturnos() {

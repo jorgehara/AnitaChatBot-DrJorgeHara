@@ -1,8 +1,8 @@
 import { addKeyword } from '@builderbot/bot';
 import { BaileysProvider as Provider } from '@builderbot/provider-baileys';
-import { newPatientFlow } from './newPatient.flow';
-import { controlFlow } from './control.flow';
-import { extractUserIntent } from '../utils/intentExtractor';
+import { newPatientFlow } from './newPatient.flow.js';
+import { controlFlow } from './control.flow.js';
+import { extractUserIntent } from '../utils/intentExtractor.js';
 
 const WELCOME_KEYWORDS = [
     'hi', 'hello', 'hola', 'buenas', 'buenos días', 'buenas tardes',

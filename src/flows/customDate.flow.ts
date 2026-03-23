@@ -1,7 +1,7 @@
 import { addKeyword } from '@builderbot/bot';
 import { BaileysProvider as Provider } from '@builderbot/provider-baileys';
-import { getSlotsByCustomDate, AvailableSlot } from '../utils/calendarService';
-import { extractDateIntent } from '../utils/intentExtractor';
+import { getSlotsByCustomDate, AvailableSlot } from '../utils/calendarService.js';
+import { extractDateIntent } from '../utils/intentExtractor.js';
 
 const MAX_SHOWN = 8;
 

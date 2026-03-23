@@ -1,9 +1,9 @@
 import { addKeyword } from '@builderbot/bot';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
-import { APP_CONFIG } from '../config/app';
-import { formatearFechaEspanol } from '../utils/dateFormatter';
-import sobreturnoService, { SobreturnoResponse } from '../utils/sobreturnoService';
+import { APP_CONFIG } from '../config/app.js';
+import { formatearFechaEspanol } from '../utils/dateFormatter.js';
+import sobreturnoService, { SobreturnoResponse } from '../utils/sobreturnoService.js';
 import { BaileysProvider as Provider } from '@builderbot/provider-baileys';
 
 interface SobreturnoState {
