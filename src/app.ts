@@ -33,6 +33,7 @@ import sobreturnoService from './utils/sobreturnoService.js';
 import { mainMenuFlow } from './flows/mainMenu.flow.js';
 import { newPatientFlow } from './flows/newPatient.flow.js';
 import { controlFlow } from './flows/control.flow.js';
+import { customDateFlow } from './flows/customDate.flow.js';
 
 interface APIResponse {
     success: boolean;
@@ -1726,6 +1727,7 @@ const main = async () => {
         mainMenuFlow,        // Menú de bienvenida con 3 opciones
         newPatientFlow,      // Flujo paciente nuevo ATM/Bruxismo (60 min)
         controlFlow,         // Flujo control/seguimiento (30 o 60 min)
+        customDateFlow,      // Búsqueda personalizada de fecha
         // Legacy (sin registrar en el nuevo flujo pero se mantienen)
         clientDataFlow,
         goodbyeFlow,
