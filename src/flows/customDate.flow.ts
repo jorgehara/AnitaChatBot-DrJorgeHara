@@ -29,19 +29,30 @@ function formatSlotsMessage(slots: AvailableSlot[]): string {
  * Triggered cuando el usuario elige "Otra fecha" (opción 4)
  */
 export const customDateFlow = addKeyword<Provider, IDBDatabase>(['__custom_date__'])
+    .addAction(async (ctx, { flowDynamic }) => {
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('[CUSTOM_DATE] 🚀 INICIO DEL FLOW');
+        console.log('[CUSTOM_DATE] From:', ctx.from);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        await flowDynamic(
+            '📅 *Búsqueda personalizada*\n\n' +
+            'Decime para qué día necesitás el turno.\n\n' +
+            'Por ejemplo:\n' +
+            '- "Martes 25"\n' +
+            '- "Jueves que viene"\n' +
+            '- "27 de marzo por la tarde"\n\n' +
+            '_Escribí *cancelar* para volver al menú_'
+        );
+    })
     .addAnswer(
-        '📅 *Búsqueda personalizada*\n\n' +
-        'Decime para qué día necesitás el turno.\n\n' +
-        'Por ejemplo:\n' +
-        '- "Martes 25"\n' +
-        '- "Jueves que viene"\n' +
-        '- "27 de marzo por la tarde"\n\n' +
-        '_Escribí *cancelar* para volver al menú_',
+        '',
         { capture: true },
         async (ctx, { state, flowDynamic }) => {
-            console.log(`[CUSTOM_DATE] Mensaje recibido: "${ctx.body}"`);
+            console.log(`[CUSTOM_DATE] 📝 Mensaje recibido: "${ctx.body}"`);
             
             if (ctx.body.trim().toLowerCase() === 'cancelar') {
+                console.log('[CUSTOM_DATE] ❌ Usuario canceló');
                 await state.clear();
                 await flowDynamic('❌ Búsqueda cancelada. Escribí *hola* para empezar de nuevo.');
                 return;
@@ -51,10 +62,12 @@ export const customDateFlow = addKeyword<Provider, IDBDatabase>(['__custom_date_
 
             try {
                 // Extraer intención de fecha con Claude Haiku
+                console.log('[CUSTOM_DATE] 🤖 Llamando a extractDateIntent...');
                 const dateIntent = await extractDateIntent(ctx.body);
-                console.log('[CUSTOM_DATE] Intención de fecha:', dateIntent);
+                console.log('[CUSTOM_DATE] ✅ Intención de fecha:', JSON.stringify(dateIntent));
 
                 if (!dateIntent.date && !dateIntent.dayOfWeek) {
+                    console.log('[CUSTOM_DATE] ❌ No se pudo entender la fecha');
                     await flowDynamic(
                         'No pude entender la fecha que mencionaste 😅\n\n' +
                         'Por favor, intentá de nuevo con un formato como:\n' +
@@ -68,12 +81,16 @@ export const customDateFlow = addKeyword<Provider, IDBDatabase>(['__custom_date_
                 // Obtener duración del turno según tipo de consulta
                 const appointmentType: string = (await state.get('appointmentType')) ?? 'Primera consulta ATM/Bruxismo';
                 const slotDuration: 30 | 60 = appointmentType.includes('Primera consulta') ? 60 : 30;
+                console.log('[CUSTOM_DATE] Duración de turno:', slotDuration, 'min');
 
                 // Si tenemos fecha completa, buscar directamente
                 if (dateIntent.date) {
+                    console.log('[CUSTOM_DATE] 🔍 Buscando slots para fecha:', dateIntent.date);
                     const result = await getSlotsByCustomDate(dateIntent.date, slotDuration);
+                    console.log('[CUSTOM_DATE] ✅ Slots encontrados:', result.slots.length);
 
                     if (result.slots.length === 0) {
+                        console.log('[CUSTOM_DATE] ❌ Sin turnos disponibles');
                         await flowDynamic(
                             '😞 ' + result.message + '\n\n' +
                             '📞 Comunicate al *3735604949* para coordinar un turno.'
@@ -93,6 +110,7 @@ export const customDateFlow = addKeyword<Provider, IDBDatabase>(['__custom_date_
 
                 // Si solo tenemos día de semana, necesitamos calcular la fecha
                 if (dateIntent.dayOfWeek) {
+                    console.log('[CUSTOM_DATE] ⚠️  Solo día de semana detectado, pidiendo número');
                     // TODO: Implementar lógica para calcular próximo día de semana
                     await flowDynamic(
                         'Por ahora, necesito que me des el número de día también.\n' +
