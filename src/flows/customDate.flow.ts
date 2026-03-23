@@ -27,28 +27,25 @@ function formatSlotsMessage(slots: AvailableSlot[]): string {
 /**
  * Flow para búsqueda de turnos por fecha personalizada
  * Triggered cuando el usuario elige "Otra fecha" (opción 4)
+ * 
+ * IMPORTANTE: No usar addAction + addAnswer con capture después de gotoFlow()
+ * Bug de BuilderBot: el capture no funciona. Solución: todo en un solo addAnswer.
  */
 export const customDateFlow = addKeyword<Provider, IDBDatabase>(['__custom_date__'])
-    .addAction(async (ctx, { flowDynamic }) => {
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('[CUSTOM_DATE] 🚀 INICIO DEL FLOW');
-        console.log('[CUSTOM_DATE] From:', ctx.from);
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        
-        await flowDynamic(
-            '📅 *Búsqueda personalizada*\n\n' +
-            'Decime para qué día necesitás el turno.\n\n' +
-            'Por ejemplo:\n' +
-            '- "Martes 25"\n' +
-            '- "Jueves que viene"\n' +
-            '- "27 de marzo por la tarde"\n\n' +
-            '_Escribí *cancelar* para volver al menú_'
-        );
-    })
     .addAnswer(
-        '',
+        '📅 *Búsqueda personalizada*\n\n' +
+        'Decime para qué día necesitás el turno.\n\n' +
+        'Por ejemplo:\n' +
+        '- "Martes 25"\n' +
+        '- "Jueves que viene"\n' +
+        '- "27 de marzo por la tarde"\n\n' +
+        '_Escribí *cancelar* para volver al menú_',
         { capture: true },
         async (ctx, { state, flowDynamic }) => {
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('[CUSTOM_DATE] 🚀 INICIO DEL FLOW - CAPTURANDO FECHA');
+            console.log('[CUSTOM_DATE] From:', ctx.from);
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             console.log(`[CUSTOM_DATE] 📝 Mensaje recibido: "${ctx.body}"`);
             
             if (ctx.body.trim().toLowerCase() === 'cancelar') {
