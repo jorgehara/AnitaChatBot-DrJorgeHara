@@ -1,9 +1,13 @@
 import { google } from 'googleapis';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const TIMEZONE = 'America/Argentina/Buenos_Aires';
-const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID!;
+const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || '';
+
+// If no calendar configured, skip Google Calendar integration
+const CALENDAR_ENABLED = !!CALENDAR_ID;
+
 // Od. Villalba atiende lunes a jueves, 15:00 a 20:00 (BsAs)
 const WORK_START_HOUR = 15;
 const WORK_END_HOUR = 20;
@@ -11,25 +15,45 @@ const WORK_DAYS = [1, 2, 3, 4]; // 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=
 // Argentina is always UTC-3, no DST
 const BSAS_OFFSET_HOURS = 3;
 
-// Soporta JSON inline (env var) o path a archivo
-const credentialsRaw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
-    ?? readFileSync(
-        process.env.GOOGLE_SERVICE_ACCOUNT_PATH ?? join(process.cwd(), 'google.json.txt'),
-        'utf8'
-    );
-const credentials = JSON.parse(credentialsRaw);
+// Initialize calendar only if credentials are available
+let calendar: any = null;
 
-console.log('[CALENDAR] Service account:', credentials.client_email);
-console.log('[CALENDAR] Calendar ID:', CALENDAR_ID);
-console.log('[CALENDAR] Horario:', `Lun-Jue ${WORK_START_HOUR}:00 - ${WORK_END_HOUR}:00 BsAs`);
+function initCalendar() {
+    if (!CALENDAR_ENABLED) {
+        console.log('[CALENDAR] Google Calendar no configurado (sin GOOGLE_CALENDAR_ID)');
+        return null;
+    }
 
-const auth = new google.auth.JWT({
-    email: credentials.client_email,
-    key: credentials.private_key,
-    scopes: ['https://www.googleapis.com/auth/calendar'],
-});
+    try {
+        const credPath = process.env.GOOGLE_SERVICE_ACCOUNT_PATH ?? join(process.cwd(), 'google.json.txt');
+        
+        if (!existsSync(credPath)) {
+            console.log('[CALENDAR] ERROR: Archivo google.json.txt no encontrado:', credPath);
+            return null;
+        }
 
-const calendar = google.calendar({ version: 'v3', auth });
+        const credentialsRaw = readFileSync(credPath, 'utf8');
+        const credentials = JSON.parse(credentialsRaw);
+
+        console.log('[CALENDAR] Service account:', credentials.client_email);
+        console.log('[CALENDAR] Calendar ID:', CALENDAR_ID);
+        console.log('[CALENDAR] Horario:', `Lun-Jue ${WORK_START_HOUR}:00 - ${WORK_END_HOUR}:00 BsAs`);
+
+        const auth = new google.auth.JWT({
+            email: credentials.client_email,
+            key: credentials.private_key,
+            scopes: ['https://www.googleapis.com/auth/calendar'],
+        });
+
+        return google.calendar({ version: 'v3', auth });
+    } catch (error: any) {
+        console.log('[CALENDAR] ERROR al inicializar:', error.message);
+        return null;
+    }
+}
+
+// Initialize on module load
+calendar = initCalendar();
 
 export interface AvailableSlot {
     startISO: string;
