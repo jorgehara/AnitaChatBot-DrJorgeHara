@@ -15,8 +15,8 @@ ulimit -n 65536
 interval=600
 restart_count=0
 log_file="restart-server.log"
-PORT=3010
-EXPRESS_PORT=3011
+PORT=3012
+EXPRESS_PORT=3013
 
 while true; do
     restart_count=$((restart_count+1))

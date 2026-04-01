@@ -4,7 +4,7 @@ config();
 export const APP_CONFIG = {
     // Configuración de la API
     API_URL: process.env.API_URL || 'https://od-melinavillalba.micitamedica.me/api',
-    PORT: process.env.PORT || 3010,
+    PORT: process.env.PORT || 3012,
 
     // URL base del frontend (para links de reserva)
     CLINIC_BASE_URL: process.env.CLINIC_BASE_URL || 'https://od-melinavillalba.micitamedica.me',

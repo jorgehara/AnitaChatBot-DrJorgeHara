@@ -61,7 +61,7 @@ const pdfFolderPath = join(__dirname, 'pdfs');
 app.use('/pdfs', express.static(pdfFolderPath));
 
 const PORT = APP_CONFIG.PORT;
-const expressPort = 3011; // Puerto diferente para Express (Od. Villalba)
+const expressPort = 3013; // Puerto diferente para Express (Od. Villalba)
 
 const isActive = async (ctx, ctxFn) => {
     // Implementa la lógica de isActive aquí
