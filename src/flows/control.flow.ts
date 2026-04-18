@@ -7,9 +7,9 @@ import { extractDateIntent } from '../utils/intentExtractor.js';
 const MAX_SHOWN = 8;
 
 const CONTROL_TYPES: Record<string, { label: string; duration: 30 | 60 }> = {
-    '1': { label: 'Control de placa (ajuste/estabilización)', duration: 30 },
-    '2': { label: 'Segunda visita / control', duration: 30 },
-    '3': { label: 'Reparación de placa', duration: 60 },
+    '1': { label: 'Control de rutina (seguimiento)', duration: 30 },
+    '2': { label: 'Segunda visita / revisación', duration: 30 },
+    '3': { label: 'Consulta por resultados', duration: 60 },
 };
 
 function buildSlotsMessage(
@@ -67,9 +67,9 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
     })
     .addAnswer(
         '¿Qué tipo de control necesitás?\n\n' +
-        '1️⃣ Control de placa (ajuste/estabilización) — *30 min*\n' +
-        '2️⃣ Segunda visita / control — *30 min*\n' +
-        '3️⃣ Reparación de placa — *60 min*\n\n' +
+        '1️⃣ Control de rutina (seguimiento) — *30 min*\n' +
+        '2️⃣ Segunda visita / revisación — *30 min*\n' +
+        '3️⃣ Consulta por resultados — *60 min*\n\n' +
         '_Respondé con 1, 2 o 3. O escribí *cancelar* para salir_',
         { capture: true },
         async (ctx, { state, flowDynamic }) => {
@@ -109,7 +109,7 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
                 if (!today.length && !tomorrow.length) {
                     await flowDynamic(
                         '❌ No hay turnos disponibles hoy ni mañana.\n\n' +
-                        'Comunicate directamente con la Dra. Villalba para coordinar 📞'
+                        'Comunicate directamente con el Dr. Jorge Hara para coordinar 📞'
                     );
                     await state.clear();
                     return;
@@ -239,7 +239,7 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
             // ── 2. Guard real: sin slots fuera de customDateMode ────────────────
             if (!slots.length) {
                 console.log('[CONTROL] ❌ Sin slots en caché');
-                await flowDynamic('❌ No hay turnos disponibles. Comunicate directamente con la Dra. Villalba 📞');
+                await flowDynamic('❌ No hay turnos disponibles. Comunicate directamente con el Dr. Jorge Hara 📞');
                 await state.clear();
                 return;
             }
@@ -302,7 +302,7 @@ export const controlFlow = addKeyword<Provider, IDBDatabase>(['__control__'])
                 console.error('[CONTROL] ❌ Error al registrar turno:', error);
                 await flowDynamic(
                     '❌ No se pudo confirmar el turno en este momento.\n' +
-                    'Por favor, contactá directamente a la Dra. Villalba 📞'
+                    'Por favor, contactá directamente al Dr. Jorge Hara 📞'
                 );
                 await state.clear();
             }

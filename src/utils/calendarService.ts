@@ -8,10 +8,10 @@ const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || '';
 // If no calendar configured, skip Google Calendar integration
 const CALENDAR_ENABLED = !!CALENDAR_ID;
 
-// Od. Villalba atiende lunes a jueves, 15:00 a 20:00 (BsAs)
-const WORK_START_HOUR = 15;
-const WORK_END_HOUR = 20;
-const WORK_DAYS = [1, 2, 3, 4]; // 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
+// Dr. Jorge Hara atiende lunes a viernes, 8:00 a 18:00 (BsAs)
+const WORK_START_HOUR = 8;
+const WORK_END_HOUR = 18;
+const WORK_DAYS = [1, 2, 3, 4, 5]; // 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
 // Argentina is always UTC-3, no DST
 const BSAS_OFFSET_HOURS = 3;
 
@@ -326,7 +326,7 @@ export async function getSlotsByCustomDate(
     return {
         slots: [],
         actualDate: targetDate,
-        message: 'No hay turnos disponibles en los próximos días. Por favor, comunicate directamente con la Dra. Villalba.',
+        message: 'No hay turnos disponibles en los próximos días. Por favor, comunicate directamente con el Dr. Jorge Hara.',
     };
 }
 
@@ -359,7 +359,7 @@ export async function createCalendarEvent(slot: AvailableSlot, patient: PatientE
     await calendar.events.insert({
         calendarId: CALENDAR_ID,
         requestBody: {
-            summary: `🦷 ${patient.patientName} — ${patient.appointmentType}`,
+            summary: `🩺 ${patient.patientName} — ${patient.appointmentType}`,
             description: [
                 `Paciente: ${patient.patientName}`,
                 `Teléfono: ${patient.phone}`,

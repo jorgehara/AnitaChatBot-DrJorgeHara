@@ -2,7 +2,7 @@ import { AvailableSlot, PatientEventData } from './calendarService.js';
 
 const API_URL = process.env.API_URL!;
 const CHATBOT_API_KEY = process.env.CHATBOT_API_KEY!;
-const TENANT_SUBDOMAIN = process.env.TENANT_SUBDOMAIN || 'od-melinavillalba'; // Default para Od. Villalba
+const TENANT_SUBDOMAIN = process.env.TENANT_SUBDOMAIN || 'dr-jorgehara'; // Default para Dr. Jorge Hara
 
 console.log('[CITAMEDICA] 🔧 Configuración del servicio:');
 console.log('[CITAMEDICA]   API_URL:', API_URL || '(NO DEFINIDA)');

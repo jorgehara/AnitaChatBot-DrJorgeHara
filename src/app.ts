@@ -47,8 +47,8 @@ interface APIResponseWrapper {
     message?: string;
 }
 
-const API_URL = process.env.API_URL || 'https://od-melinavillalba.micitamedica.me/api';
-const CLINIC_BASE_URL = process.env.CLINIC_BASE_URL || 'https://od-melinavillalba.micitamedica.me';
+const API_URL = process.env.API_URL || 'https://dr-jorgehara.micitamedica.me/api';
+const CLINIC_BASE_URL = process.env.CLINIC_BASE_URL || 'https://dr-jorgehara.micitamedica.me';
 const CHATBOT_API_KEY = process.env.CHATBOT_API_KEY || '';
 console.log('API URL configurada:', API_URL);
 
@@ -61,7 +61,7 @@ const pdfFolderPath = join(__dirname, 'pdfs');
 app.use('/pdfs', express.static(pdfFolderPath));
 
 const PORT = APP_CONFIG.PORT;
-const expressPort = 3013; // Puerto diferente para Express (Od. Villalba)
+const expressPort = 3009; // Puerto diferente para Express (Dr. Jorge Hara)
 
 const isActive = async (ctx, ctxFn) => {
     // Implementa la lógica de isActive aquí
@@ -271,7 +271,7 @@ async function buscarProximoDiaConTurnos(startDay: Date, localChatDate: Date, st
 }
 
 // ============================================================
-// SOBRETURNOS — DESHABILITADO para Od. Villalba
+// SOBTURNOS — DESHABILITADO para Dr. Jorge Hara
 // Maneja sobreturnos de manera personal y directa
 // ============================================================
 
@@ -295,7 +295,7 @@ async function generarOpcionesSobreturno(): Promise<string> {
 */
 
 //Flujo de sobreturnos - SOLO se activa con la palabra "sobreturnos"
-/* DESHABILITADO - Od. Villalba maneja sobreturnos de forma personal
+/* DESHABILITADO - Dr. Jorge Hara maneja sobreturnos de forma personal
 export const sobreTurnosTemporario = addKeyword(['sobreturnos', 'sobreturno', 'Sobreturnos', 'Sobreturno'])
     .addAction(async (ctx, { flowDynamic }) => {
         try {
@@ -353,7 +353,7 @@ export const sobreTurnosTemporario = addKeyword(['sobreturnos', 'sobreturno', 'S
                 console.error('[SOBRETURNOS] Error al generar token:', tokenError);
             }
 
-            let message = `🦷 *SOLICITUD DE SOBRETURNOS*\n`;
+            let message = `🩺 *SOLICITUD DE SOBRETURNOS*\n`;
             message += `¡Gracias por comunicarte con nosotros!\n\n`;
 
             if (disponibles > 0) {
@@ -375,7 +375,7 @@ export const sobreTurnosTemporario = addKeyword(['sobreturnos', 'sobreturno', 'S
         } catch (error) {
             console.error('[SOBRETURNOS ERROR]:', error);
             await flowDynamic(
-                `🦷 *SOLICITUD DE SOBRETURNOS*\n` +
+                `🩺 *SOLICITUD DE SOBRETURNOS*\n` +
                 `¡Gracias por comunicarte con nosotros!\n\n` +
                 `📱 *Opciones para solicitar un sobreturno:*\n\n` +
                 `1️⃣ *Por teléfono:*\n` +
@@ -389,7 +389,7 @@ export const sobreTurnosTemporario = addKeyword(['sobreturnos', 'sobreturno', 'S
 
 
 //Flujo de sobreturnos - SOLO se activa con la palabra "sobreturnos"
-/* DESHABILITADO - Od. Villalba maneja sobreturnos de forma personal
+/* DESHABILITADO - Dr. Jorge Hara maneja sobreturnos de forma personal
 export const bookSobreturnoFlow = addKeyword(['sobreturnos', 'sobreturno', 'Sobreturnos', 'Sobreturno'])
     .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
         // Check de disponibilidad antes de ofrecer sobreturnos
@@ -426,7 +426,7 @@ export const bookSobreturnoFlow = addKeyword(['sobreturnos', 'sobreturno', 'Sobr
                     const nextDay = getFollowingWD(appointmentDate);
                     const periodStr = block.period === 'morning' ? 'la mañana' : block.period === 'afternoon' ? 'la tarde' : 'este día';
                     await flowDynamic(
-                        `⚠️ *La Od. Villalba no atiende ${periodStr} del ${formatearFechaEspanol(formattedDate)}.*\n\n` +
+                        `⚠️ *El Dr. Jorge Hara no atiende ${periodStr} del ${formatearFechaEspanol(formattedDate)}.*\n\n` +
                         `📅 *Próximo día disponible:* ${formatearFechaEspanol(format(nextDay, 'yyyy-MM-dd'))}\n\n` +
                         `📞 Para consultar llamá al *XXXXXXXXXX*`
                     );
@@ -1093,13 +1093,13 @@ export const clientDataFlow = addKeyword(['datos_cliente'])
                 const data = result.data;
                 if (data && data.success) {
                     const fechaFormateada = formatearFechaEspanol(data.data.date);
-                    const message = `✨ *CONFIRMACIÓN DE CONSULTA ODONTOLÓGICA* ✨\n\n` +
+                    const message = `✨ *CONFIRMACIÓN DE CONSULTA MÉDICA* ✨\n\n` +
                         `✅ La consulta ha sido agendada exitosamente\n\n` +
                         `📅 *Fecha:* ${fechaFormateada}\n` +
                         `🕒 *Hora:* ${data.data.time}\n` +
                         `👤 *Paciente:* ${data.data.clientName}\n` +
                         `📞 *Teléfono:* ${data.data.phone}\n` +
-                        `🦷 *Modalidad:* ${data.data.socialWork}\n\n` +
+                        `🩺 *Modalidad:* ${data.data.socialWork}\n\n` +
                         `ℹ️ *Información importante:*\n` +
                         `- Por favor, llegue 15 minutos antes de su consulta\n` +
                         `- Traiga su documento de identidad\n\n` +
@@ -1129,7 +1129,7 @@ export const cancelFlow = addKeyword(['cancelar', 'cancel', 'salir'])
         await flowDynamic('❌ *Reserva cancelada.* Si necesitas más ayuda, no dudes en contactarnos nuevamente.\n🤗 ¡Que tengas un excelente día!\n');
     });
 
-// Flujo para agendar una consulta odontológica
+// Flujo para agendar una consulta médica
 //Flujo de despedida
 export const goodbyeFlow = addKeyword(['bye', 'adiós', 'chao', 'chau'])
     .addAnswer(
@@ -1259,15 +1259,15 @@ const welcomeFlow = addKeyword<Provider, IDBDatabase>(welcomeKeywords)
             if (blockedPeriod === 'full') {
                 const nextDay = getFollowingWorkingDay(appointmentDate);
                 await flowDynamic(
-                    `🦷 *¡Bienvenido al Asistente Virtual de la Od. Melina Villalba!* 🦷\n\n` +
-                    `⚠️ *La Od. Villalba no atiende el ${formatearFechaEspanol(formattedDate)}.*\n\n` +
+                    `🩺 *¡Bienvenido al Asistente Virtual del Dr. Jorge Hara!* 🩺\n\n` +
+                    `⚠️ *El Dr. Jorge Hara no atiende el ${formatearFechaEspanol(formattedDate)}.*\n\n` +
                     `📅 *Próximo día disponible:* ${formatearFechaEspanol(format(nextDay, 'yyyy-MM-dd'))}\n\n`
                 );
                 return;
             }
 
             // Mensaje de bienvenida
-            await flowDynamic(`🦷 *¡Bienvenido al Asistente Virtual de la Od. Melina Villalba!* 🦷`);
+            await flowDynamic(`🩺 *¡Bienvenido al Asistente Virtual del Dr. Jorge Hara!* 🩺`);
                 //\n\n‼️*EL DIA 16 y 17 DE FEBRERO NO ATIENDE*‼️\n\n
 
 
@@ -1343,7 +1343,7 @@ const welcomeFlow = addKeyword<Provider, IDBDatabase>(welcomeKeywords)
                     if (blockedPeriod === 'morning' || blockedPeriod === 'afternoon') {
                         const periodStr = blockedPeriod === 'morning' ? 'la mañana' : 'la tarde';
                         await flowDynamic(
-                            `⚠️ *La Od. Villalba no atiende ${periodStr} del ${formatearFechaEspanol(formattedDate)}.*`
+                            `⚠️ *El Dr. Jorge Hara no atiende ${periodStr} del ${formatearFechaEspanol(formattedDate)}.*`
                         );
                     }
 
@@ -1688,7 +1688,7 @@ const welcomeFlow = addKeyword<Provider, IDBDatabase>(welcomeKeywords)
     });
 
 // Flujo para generar enlace de reserva pública
-/* DESHABILITADO - Od. Villalba maneja links de forma personal
+/* DESHABILITADO - Dr. Jorge Hara maneja links de forma personal
 export const publicBookingLinkFlow = addKeyword(['bazinga', 'link', 'enlace'])
     .addAction(async (ctx, { flowDynamic }) => {
         try {
@@ -1726,7 +1726,7 @@ export const publicBookingLinkFlow = addKeyword(['bazinga', 'link', 'enlace'])
             console.error('[PUBLIC LINK ERROR]:', error);
             await flowDynamic(
                 `❌ *Error al generar el enlace*\n\n` +
-                `No pude crear tu enlace de reserva. Por favor, intenta nuevamente o contacta a la Od. Melina Villalba.`
+                `No pude crear tu enlace de reserva. Por favor, intenta nuevamente o contacta al Dr. Jorge Hara.`
             );
         }
     });
@@ -1737,7 +1737,7 @@ const main = async () => {
         // Flujos principales — nuevo sistema Google Calendar + Haiku
         cancelFlow,          // PRIMERO: captura "cancelar" en cualquier momento
         mainMenuFlow,        // Menú de bienvenida con 3 opciones
-        newPatientFlow,      // Flujo paciente nuevo ATM/Bruxismo (60 min)
+        newPatientFlow,      // Flujo paciente nueva consulta (60 min)
         controlFlow,         // Flujo control/seguimiento (30 o 60 min)
         customDateFlow,      // Búsqueda personalizada de fecha
         // Legacy (sin registrar en el nuevo flujo pero se mantienen)

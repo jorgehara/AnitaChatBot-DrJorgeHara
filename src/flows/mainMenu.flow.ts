@@ -5,10 +5,10 @@ import { controlFlow } from './control.flow.js';
 import { extractUserIntent } from '../utils/intentExtractor.js';
 
 const MENU_TEXT =
-    '🦷 *¡Bienvenido al consultorio de la Od. Melina Villalba!* 🦷\n\n' +
+    '🩺 *¡Bienvenido al Consultorio del Dr. Jorge Hara!* 🩺\n\n' +
     'Soy ANITA, tu asistente virtual 😊\n\n' +
     '¿En qué puedo ayudarte?\n\n' +
-    '1️⃣ Primera consulta (ATM / Bruxismo)\n' +
+    '1️⃣ Primera consulta\n' +
     '2️⃣ Control o seguimiento\n' +
     '3️⃣ Tengo dolor / urgencia\n\n' +
     '_Respondé con el número de tu opción_';
@@ -86,7 +86,7 @@ export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(EVENTS.WELCOME)
                     await flowDynamic(
                         '¡Claro! Te ayudo a reservar un turno 😊\n\n' +
                         'Primero, decime qué tipo de consulta necesitás:\n\n' +
-                        '1️⃣ Primera consulta (ATM / Bruxismo)\n' +
+                        '1️⃣ Primera consulta\n' +
                         '2️⃣ Control o seguimiento\n\n' +
                         'Respondé con *1* o *2*'
                     );
@@ -94,14 +94,14 @@ export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(EVENTS.WELCOME)
                     const emergencyPhone = process.env.EMERGENCY_PHONE_NUMBER || '3794051686';
                     await flowDynamic(
                         '😟 Entiendo que estás con dolor.\n\n' +
-                        'Para casos de urgencia, comunicate directamente con la Dra. Villalba:\n\n' +
+                        'Para casos de urgencia, comunicate directamente con el Dr. Jorge Hara:\n\n' +
                         `📞 *${emergencyPhone}*\n\n` +
                         '¡Esperamos poderte atender pronto! 💙'
                     );
                 } else {
                     await flowDynamic(
                         'Para ayudarte mejor, elegí una opción:\n\n' +
-                        '1️⃣ Primera consulta (ATM / Bruxismo)\n' +
+                        '1️⃣ Primera consulta\n' +
                         '2️⃣ Control o seguimiento\n' +
                         '3️⃣ Tengo dolor / urgencia\n\n' +
                         'Respondé con *1*, *2* o *3*'
@@ -117,13 +117,13 @@ export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(EVENTS.WELCOME)
                 await state.update({ timePreference: intent.timePreference });
             }
 
-            await state.update({ appointmentType: option === '1' ? 'Primera consulta ATM/Bruxismo' : 'Control o seguimiento' });
+            await state.update({ appointmentType: option === '1' ? 'Primera consulta' : 'Control o seguimiento' });
 
             if (option === '3') {
                 const emergencyPhone = process.env.EMERGENCY_PHONE_NUMBER || '3794051686';
                 await flowDynamic(
                     '😟 Entiendo que estás con dolor.\n\n' +
-                    'Para casos de urgencia, comunicate directamente con la Dra. Villalba:\n\n' +
+                    'Para casos de urgencia, comunicate directamente con el Dr. Jorge Hara:\n\n' +
                     `📞 *${emergencyPhone}*\n\n` +
                     '¡Esperamos poderte atender pronto! 💙'
                 );

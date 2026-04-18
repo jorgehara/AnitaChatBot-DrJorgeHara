@@ -69,10 +69,10 @@ export const newPatientFlow = addKeyword<Provider, IDBDatabase>(['__new_patient_
         }
 
         console.log(`[NEW_PATIENT] ✅ Nombre detectado: "${existingName}"`);
-        await state.update({ appointmentType: 'Primera consulta ATM/Bruxismo' });
+        await state.update({ appointmentType: 'Primera consulta' });
     })
     .addAnswer(
-        '¿Contás con *radiografías o estudios previos* relacionados a la mandíbula o ATM?\n\n' +
+        '¿Tenés *estudios médicos previos* (análisis, ecografías, radiografías, etc.)?\n\n' +
         '1️⃣ Sí\n' +
         '2️⃣ No\n' +
         '3️⃣ No sé',
@@ -94,7 +94,7 @@ export const newPatientFlow = addKeyword<Provider, IDBDatabase>(['__new_patient_
         }
     )
     .addAnswer(
-        '¿Actualmente usás alguna *placa dental, protector bucal* u otro dispositivo para dormir o durante el día?\n\n' +
+        '¿Tomás alguna *medicación* de forma regular o tenés alguna condición médica conocida?\n\n' +
         '1️⃣ Sí\n' +
         '2️⃣ No',
         { capture: true },
@@ -110,7 +110,7 @@ export const newPatientFlow = addKeyword<Provider, IDBDatabase>(['__new_patient_
             }
             const usesDevice = ctx.body.trim() === '1' ? 'Sí' : 'No';
             await state.update({ usesDevice });
-            console.log(`[NEW_PATIENT] ✅ Dispositivo guardado: "${usesDevice}"`);
+            console.log(`[NEW_PATIENT] ✅ Medicación/condición guardada: "${usesDevice}"`);
         }
     )
     .addAnswer(
@@ -128,7 +128,7 @@ export const newPatientFlow = addKeyword<Provider, IDBDatabase>(['__new_patient_
                     console.log('[NEW_PATIENT] ❌ Sin turnos disponibles');
                     await flowDynamic(
                         '❌ No hay turnos disponibles hoy ni mañana.\n\n' +
-                        'Comunicate directamente con la Dra. Villalba para coordinar 📞'
+                        'Comunicate directamente con el Dr. Jorge Hara para coordinar 📞'
                     );
                     await state.clear();
                     return;
@@ -228,7 +228,7 @@ export const newPatientFlow = addKeyword<Provider, IDBDatabase>(['__new_patient_
                         return fallBack();
                     }
 
-                    const appointmentType: string = (await state.get('appointmentType')) ?? 'Primera consulta ATM/Bruxismo';
+const appointmentType: string = (await state.get('appointmentType')) ?? 'Primera consulta';
                     const slotDuration: 30 | 60 = appointmentType.includes('Primera consulta') ? 60 : 30;
 
                     const result = await getSlotsByCustomDate(dateIntent.date, slotDuration);
@@ -265,7 +265,7 @@ export const newPatientFlow = addKeyword<Provider, IDBDatabase>(['__new_patient_
             // ── Guard: sin slots y no en customDateMode → error real ───────────────
             if (!slots.length) {
                 console.log('[NEW_PATIENT] ❌ Sin slots en caché (fuera de customDateMode)');
-                await flowDynamic('❌ No hay turnos disponibles. Comunicate directamente con la Dra. Villalba 📞');
+                await flowDynamic('❌ No hay turnos disponibles. Comunicate directamente con el Dr. Jorge Hara 📞');
                 await state.clear();
                 return;
             }
@@ -303,20 +303,20 @@ export const newPatientFlow = addKeyword<Provider, IDBDatabase>(['__new_patient_
             const clientName: string = (await state.get('clientName')) ?? '';
             const hasStudies: string = (await state.get('hasStudies')) ?? '';
             const usesDevice: string = (await state.get('usesDevice')) ?? '';
-            const appointmentType: string = (await state.get('appointmentType')) ?? 'Primera consulta ATM/Bruxismo';
+            const appointmentType: string = (await state.get('appointmentType')) ?? 'Primera consulta';
 
             console.log('[NEW_PATIENT] Datos del paciente:');
             console.log('  - Nombre:', clientName);
             console.log('  - Estudios:', hasStudies);
-            console.log('  - Dispositivo:', usesDevice);
+            console.log('  - Medicación/condición:', usesDevice);
 
             const eventData = {
                 patientName: clientName,
                 appointmentType: appointmentType.includes('Primera consulta')
-                    ? 'Primera consulta ATM/Bruxismo (60 min)'
+                    ? 'Primera consulta médica (60 min)'
                     : 'Control o seguimiento (30 min)',
                 phone: ctx.from,
-                notes: `Estudios previos: ${hasStudies} | Usa dispositivo: ${usesDevice}`,
+                notes: `Estudios previos: ${hasStudies} | Medicación/condición: ${usesDevice}`,
             };
 
             console.log('[NEW_PATIENT] 🔄 Creando cita en CitaMedica...');
@@ -337,7 +337,7 @@ export const newPatientFlow = addKeyword<Provider, IDBDatabase>(['__new_patient_
                 console.error('[NEW_PATIENT] ❌ ERROR al crear cita:', error);
                 await flowDynamic(
                     '❌ No se pudo confirmar el turno en este momento.\n' +
-                    'Por favor, contactá directamente a la Dra. Villalba 📞'
+                    'Por favor, contactá directamente al Dr. Jorge Hara 📞'
                 );
                 await state.clear();
             }

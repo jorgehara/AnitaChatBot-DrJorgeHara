@@ -222,7 +222,7 @@ export const customDateFlow = addKeyword<Provider, IDBDatabase>(['__custom_date_
                 console.error('[CUSTOM_DATE] ❌ ERROR al crear cita:', error);
                 await flowDynamic(
                     '❌ No se pudo confirmar el turno en este momento.\n' +
-                    'Por favor, contactá directamente a la Dra. Villalba 📞'
+                    'Por favor, contactá directamente al Dr. Jorge Hara 📞'
                 );
                 await state.clear();
             }
