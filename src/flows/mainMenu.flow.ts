@@ -152,7 +152,7 @@ export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(EVENTS.WELCOME)
 
             const appointmentType = await state.get('appointmentType');
 
-            if (appointmentType === 'Primera consulta ATM/Bruxismo') {
+            if (appointmentType === 'Primera consulta') {
                 console.log('[MENU] → Redirigiendo a newPatientFlow');
                 return gotoFlow(newPatientFlow);
             } else {
