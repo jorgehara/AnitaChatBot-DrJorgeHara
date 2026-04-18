@@ -1736,6 +1736,7 @@ const main = async () => {
     const adapterFlow = createFlow([
         // Flujos principales — nuevo sistema Google Calendar + Haiku
         cancelFlow,          // PRIMERO: captura "cancelar" en cualquier momento
+        welcomeFlow,         // Keywords: hola, hello, turnos, turno
         mainMenuFlow,        // Menú de bienvenida con 3 opciones
         newPatientFlow,      // Flujo paciente nueva consulta (60 min)
         controlFlow,         // Flujo control/seguimiento (30 o 60 min)
@@ -1772,6 +1773,11 @@ const main = async () => {
         '/v1/messages',
         handleCtx(async (bot, req, res) => {
             const { number, message, urlMedia } = req.body
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('[HTTP /v1/messages] 📩 MENSAJE RECIBIDO');
+            console.log('[HTTP /v1/messages] From:', number);
+            console.log('[HTTP /v1/messages] Message:', message);
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             await bot.sendMessage(number, message, { media: urlMedia ?? null })
             return res.end('sended')
         })
