@@ -28,7 +28,7 @@ export interface ExtractedDateIntent {
 export async function extractUserIntent(message: string): Promise<ExtractedIntent> {
     console.log(`[INTENT_EXTRACTOR] Procesando mensaje: "${message}"`);
 
-    const prompt = `Analiza este mensaje de un paciente que está reservando un turno odontológico.
+    const prompt = `Analiza este mensaje de un paciente que está reservando un turno médico.
 
 Mensaje: "${message}"
 
