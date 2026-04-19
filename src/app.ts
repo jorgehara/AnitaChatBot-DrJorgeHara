@@ -1776,13 +1776,11 @@ const main = async () => {
     console.log('[MAIN] ✅ Flujos creados, adapterFlow:', adapterFlow ? 'EXISTS' : 'NULL');
 
     console.log('🔧 Creando adapter del provider (WhatsApp)...');
-console.log('[MAIN] Provider version:', JSON.stringify([2, 3000, 1031870451]));
 const adapterProvider = createProvider(Provider, {
-    version: [2, 3000, 1037654574] as any
+    version: [2, 3000, 1035194821] as any
 })
 console.log('✅ Adapter del provider creado');
 console.log('[MAIN] Adapter Provider instance:', adapterProvider ? 'EXISTS' : 'NULL');
-    // const adapterProvider = createProvider(Provider)
 
     console.log('🔧 Conectando a MongoDB...');
 console.log('[MAIN] MongoDB URI:', APP_CONFIG.MONGO_DB_URI);
