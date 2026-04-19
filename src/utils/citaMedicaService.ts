@@ -30,12 +30,20 @@ export async function createCitaMedicaAppointment(
         throw new Error('CHATBOT_API_KEY environment variable is missing');
     }
     
+    const rawType = patient.appointmentType ?? '';
+    const consultationType = rawType.toLowerCase().includes('primera')
+        ? 'Primera consulta'
+        : rawType.toLowerCase().includes('control') || rawType.toLowerCase().includes('seguimiento')
+            ? 'Control'
+            : '';
+
     const body = {
         clientName: patient.patientName,
         phone: patient.phone,
         date: slot.date,
         time: slot.time,
         socialWork: 'CONSULTA PARTICULAR',
+        consultationType,
         description: [patient.appointmentType, patient.notes].filter(Boolean).join(' | '),
     };
 
