@@ -1,4 +1,5 @@
 import { join } from 'path'
+import { existsSync, createReadStream } from 'fs'
 import { createBot, createProvider, createFlow, addKeyword } from '@builderbot/bot'
 import { MongoAdapter as Database } from '@builderbot/database-mongo'
 import { BaileysProvider as Provider } from '@builderbot/provider-baileys'
@@ -1848,21 +1849,14 @@ console.log('[MAIN] Adapter DB instance:', adapterDB ? 'EXISTS' : 'NULL');
         })
     )
 
-    adapterProvider.server.get('/v1/qr', async (req, res) => {
-        console.log('[HTTP /v1/qr] Solicitando código QR...');
-        if (adapterProvider && typeof (adapterProvider as any).getQrImage === 'function') {
-            try {
-                const qrImage = await (adapterProvider as any).getQrImage();
-                console.log('[HTTP /v1/qr] QR disponible, longitud:', qrImage.length);
-                res.setHeader('Content-Type', 'image/png');
-                res.send(qrImage);
-            } catch (qrError) {
-                console.error('[HTTP /v1/qr] ❌ Error al obtener QR:', qrError);
-                res.status(500).json({ error: 'QR no disponible' });
-            }
+    adapterProvider.server.get('/v1/qr', (req, res) => {
+        const qrPath = join(process.cwd(), 'bot.qr.png');
+        if (existsSync(qrPath)) {
+            res.setHeader('Content-Type', 'image/png');
+            createReadStream(qrPath).pipe(res);
         } else {
-            console.log('[HTTP /v1/qr] ⚠️ Provider no tiene getQrImage');
-            res.status(503).json({ error: 'QR no disponible en este momento' });
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="5"><title>QR</title></head><body><p>QR aún no disponible. La página se actualizará en 5 segundos...</p></body></html>`);
         }
     });
 
