@@ -1765,7 +1765,7 @@ const main = async () => {
         // Flujos principales — nuevo sistema Google Calendar + Haiku
         cancelFlow,          // PRIMERO: captura "cancelar" en cualquier momento
         goodbyeFlow,         // Keywords: bye, chau, etc.
-        // welcomeFlow DESHABILITADO: usaba REST API legacy y bloqueaba mainMenuFlow
+        welcomeFlow,        // Keywords: hola, turno, doctor — dispara menú principal
         mainMenuFlow,        // EVENTS.WELCOME — único punto de entrada
         newPatientFlow,      // Flujo paciente nueva consulta (60 min)
         controlFlow,         // Flujo control/seguimiento (30 o 60 min)
