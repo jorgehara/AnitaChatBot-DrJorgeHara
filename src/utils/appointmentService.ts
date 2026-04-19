@@ -26,39 +26,52 @@ class AppointmentService {
     }
 
     async getAvailableSlots(date: string): Promise<AppointmentSlot[]> {
-        console.log('=== DEBUG FETCH SLOTS ===');
-        console.log(`9. Consultando slots disponibles para: ${date}`);
-
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('[APPOINTMENT_SERVICE] 🚀 getAvailableSlots()');
+        console.log('[APPOINTMENT_SERVICE] 📅 Fecha:', date);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
         // 1. Intentar obtener del caché
         const cachedData = cache.get<AppointmentSlot[]>(this.getCacheKey(date));
         if (cachedData) {
-            console.log('Usando datos en caché');
+            console.log('[APPOINTMENT_SERVICE] ✅ Datos en caché:', cachedData.length, 'slots');
             return cachedData;
         }
+        console.log('[APPOINTMENT_SERVICE] ℹ️ No hay caché, consultando servidor...');
 
         // 2. Si no hay caché, intentar obtener del servidor
         try {
+            console.log('[APPOINTMENT_SERVICE] 🔍 Verificando conectividad...');
             // Verificar conectividad con un endpoint ligero
             await this.checkConnectivity();
 
             if (!this.isOnline) {
-                console.log('Sistema offline. Usando sistema de respaldo');
+                console.log('[APPOINTMENT_SERVICE] ⚠️ Sistema offline. Usando sistema de respaldo');
                 const fallbackData = getFallbackSlots(date);
                 return [...fallbackData.data.available.morning, ...fallbackData.data.available.afternoon];
             }
+            console.log('[APPOINTMENT_SERVICE] ✅ Sistema online');
 
+            console.log('[APPOINTMENT_SERVICE] 🌐 Haciendo petición GET /appointments/available/', date);
             const response = await axiosInstance.get(`/appointments/available/${date}`);
+            console.log('[APPOINTMENT_SERVICE] ✅ Respuesta recibida:', response.status);
             const slots = response.data.data;
             
+            console.log('[APPOINTMENT_SERVICE] 💾 Guardando en caché:', slots.length, 'slots');
             // Guardar en caché
             cache.set(this.getCacheKey(date), slots);
             
             return slots;
         } catch (error: any) {
-            console.error('Error al obtener slots:', error.message);
+            console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.error('[APPOINTMENT_SERVICE] ❌ ERROR al obtener slots:', error.message);
+            console.error('[APPOINTMENT_SERVICE] Código:', error.code);
+            console.error('[APPOINTMENT_SERVICE] URL:', error.config?.url);
+            console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             
             // Si hay un error, marcar como offline y usar sistema de respaldo
             this.isOnline = false;
+            console.log('[APPOINTMENT_SERVICE] 🔄 Usando fallback (datos de respaldo)');
             const fallbackData = getFallbackSlots(date);
             return [...fallbackData.data.available.morning, ...fallbackData.data.available.afternoon];
         }

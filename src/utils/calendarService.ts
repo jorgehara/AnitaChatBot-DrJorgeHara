@@ -1,9 +1,13 @@
 import { google } from 'googleapis';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { axiosInstance } from '../config/axios.js';
 
 const TIMEZONE = 'America/Argentina/Buenos_Aires';
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || '';
+const API_URL = process.env.API_URL || 'https://micitamedica.me/api';
+const CHATBOT_API_KEY = process.env.CHATBOT_API_KEY || '';
+const TENANT_SUBDOMAIN = process.env.TENANT_SUBDOMAIN || 'dr-jorgehara';
 
 // If no calendar configured, skip Google Calendar integration
 const CALENDAR_ENABLED = !!CALENDAR_ID;
@@ -25,10 +29,10 @@ function initCalendar() {
     }
 
     try {
-        const credPath = process.env.GOOGLE_SERVICE_ACCOUNT_PATH ?? join(process.cwd(), 'google.json.txt');
+        const credPath = process.env.GOOGLE_SERVICE_ACCOUNT_PATH ?? join(process.cwd(), 'google.json');
         
         if (!existsSync(credPath)) {
-            console.log('[CALENDAR] ERROR: Archivo google.json.txt no encontrado:', credPath);
+            console.log('[CALENDAR] ERROR: Archivo google.json no encontrado:', credPath);
             return null;
         }
 
@@ -71,6 +75,87 @@ export interface PatientEventData {
     notes?: string;
 }
 
+/**
+ * Obtiene slots desde la API REST de CitaMedica (fallback cuando Google Calendar no está disponible)
+ */
+async function getSlotsFromApiRest(date: string): Promise<AvailableSlot[]> {
+    console.log('[CALENDAR] 🔄 Obteniendo slots desde API REST de CitaMedica...');
+    console.log('[CALENDAR] 🌐 URL:', `${API_URL}/appointments/available/${date}`);
+    
+    try {
+        const response = await axiosInstance.get(`/appointments/available/${date}`, {
+            timeout: 10000,
+        });
+        
+        if (!response.data?.success) {
+            console.log('[CALENDAR] API REST no devolvió success=true');
+            return [];
+        }
+        
+        const data = response.data.data;
+        const slots: AvailableSlot[] = [];
+        
+        // Parsear slots de la mañana
+        if (data.available?.morning) {
+            for (const slot of data.available.morning) {
+                if (slot.status === 'available') {
+                    const [hour, minute] = slot.displayTime.split(':').map(Number);
+                    const displayText = formatSlotDisplayFromDate(date, hour, minute);
+                    slots.push({
+                        startISO: `${date}T${slot.displayTime}:00`,
+                        endISO: `${date}T${slot.displayTime}:00`,
+                        date: date,
+                        time: slot.displayTime,
+                        displayText: displayText,
+                        durationMinutes: 60,
+                    });
+                }
+            }
+        }
+        
+        // Parsear slots de la tarde
+        if (data.available?.afternoon) {
+            for (const slot of data.available.afternoon) {
+                if (slot.status === 'available') {
+                    const [hour, minute] = slot.displayTime.split(':').map(Number);
+                    const displayText = formatSlotDisplayFromDate(date, hour, minute);
+                    slots.push({
+                        startISO: `${date}T${slot.displayTime}:00`,
+                        endISO: `${date}T${slot.displayTime}:00`,
+                        date: date,
+                        time: slot.displayTime,
+                        displayText: displayText,
+                        durationMinutes: 60,
+                    });
+                }
+            }
+        }
+        
+        console.log('[CALENDAR] ✅ Slots obtenidos desde API REST:', slots.length);
+        return slots;
+        
+    } catch (error: any) {
+        console.error('[CALENDAR] ❌ Error al obtener slots desde API REST:', error?.message || error);
+        return [];
+    }
+}
+
+/**
+ * Convierte fecha y hora a texto legible (ej: "Martes 18/04 — 09:00 hs")
+ */
+function formatSlotDisplayFromDate(date: string, hour: number, minute: number): string {
+    const [year, month, day] = date.split('-').map(Number);
+    const dateObj = new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
+    
+    const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const dayOfWeek = dateObj.getUTCDay();
+    const dayName = DAY_NAMES[dayOfWeek];
+    const dateStr = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}`;
+    const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    
+    return `${dayName} ${dateStr} — ${timeStr} hs`;
+}
+
 function bsAsToUtc(year: number, month: number, day: number, hour: number, minute: number): Date {
     return new Date(Date.UTC(year, month - 1, day, hour + BSAS_OFFSET_HOURS, minute, 0));
 }
@@ -97,6 +182,32 @@ function formatSlotDisplay(utcDate: Date): string {
 }
 
 export async function getAvailableSlots(durationMinutes: 30 | 60): Promise<AvailableSlot[]> {
+    console.log(`[CALENDAR] getAvailableSlots — duración: ${durationMinutes} min`);
+    console.log(`[CALENDAR] Calendar ID configurado:`, CALENDAR_ID ? 'YES' : 'NO');
+    
+    // Si no hay calendar configurado, usar API REST directamente
+    if (!calendar) {
+        console.log('[CALENDAR] ⚠️ Google Calendar no está configurado. Usando API REST como fuente principal.');
+        console.log('[CALENDAR] Para activar Google Calendar, configurá GOOGLE_CALENDAR_ID y google.json');
+        // Llamar a API REST para obtener slots de hoy y mañana
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const todayStr = today.toISOString().split('T')[0];
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        
+        const [todaySlots, tomorrowSlots] = await Promise.all([
+            getSlotsFromApiRest(todayStr),
+            getSlotsFromApiRest(tomorrowStr),
+        ]);
+        
+        // Filtrar por duración (30 o 60 min)
+        const filtered = [...todaySlots, ...tomorrowSlots].filter(s => s.durationMinutes === durationMinutes);
+        console.log(`[CALENDAR] Total slots después de filtrar por ${durationMinutes}min:`, filtered.length);
+        return filtered;
+    }
+    
     const nowUtc = new Date();
     const minBookingUtc = new Date(nowUtc.getTime() + 60 * 60 * 1000);
 
@@ -104,78 +215,120 @@ export async function getAvailableSlots(durationMinutes: 30 | 60): Promise<Avail
     const lastDayOfMonth = new Date(year, month, 0).getDate();
     const endOfMonthUtc = bsAsToUtc(year, month, lastDayOfMonth, WORK_END_HOUR, 0);
 
-    console.log(`[CALENDAR] getAvailableSlots — duración: ${durationMinutes} min`);
     console.log(`[CALENDAR] Rango de búsqueda: ${minBookingUtc.toISOString()} → ${endOfMonthUtc.toISOString()}`);
 
-    const freeBusy = await calendar.freebusy.query({
-        requestBody: {
-            timeMin: minBookingUtc.toISOString(),
-            timeMax: endOfMonthUtc.toISOString(),
-            timeZone: TIMEZONE,
-            items: [{ id: CALENDAR_ID }],
-        },
-    });
+    try {
+        const freeBusy = await calendar.freebusy.query({
+            requestBody: {
+                timeMin: minBookingUtc.toISOString(),
+                timeMax: endOfMonthUtc.toISOString(),
+                timeZone: TIMEZONE,
+                items: [{ id: CALENDAR_ID }],
+            },
+        });
 
-    const errors = freeBusy.data.calendars?.[CALENDAR_ID]?.errors;
-    if (errors?.length) {
-        console.warn('[CALENDAR] ⚠️ Errores en freeBusy:', JSON.stringify(errors));
-    }
-
-    const busyPeriods = (freeBusy.data.calendars?.[CALENDAR_ID]?.busy ?? []).map(b => ({
-        start: new Date(b.start!),
-        end: new Date(b.end!),
-    }));
-
-    console.log(`[CALENDAR] Períodos ocupados encontrados: ${busyPeriods.length}`);
-    busyPeriods.forEach(b => {
-        console.log(`[CALENDAR]   Ocupado: ${b.start.toISOString()} → ${b.end.toISOString()}`);
-    });
-
-    const slots: AvailableSlot[] = [];
-    const { day: todayDay } = utcToBsAs(nowUtc);
-
-    for (let day = todayDay; day <= lastDayOfMonth; day++) {
-        const noonUtc = bsAsToUtc(year, month, day, 12, 0);
-        const { dayOfWeek } = utcToBsAs(noonUtc);
-
-        if (!WORK_DAYS.includes(dayOfWeek)) continue;
-
-        for (
-            let minutes = WORK_START_HOUR * 60;
-            minutes + durationMinutes <= WORK_END_HOUR * 60;
-            minutes += durationMinutes
-        ) {
-            const hour = Math.floor(minutes / 60);
-            const minute = minutes % 60;
-
-            const slotStartUtc = bsAsToUtc(year, month, day, hour, minute);
-            const slotEndUtc = new Date(slotStartUtc.getTime() + durationMinutes * 60 * 1000);
-
-            if (slotStartUtc < minBookingUtc) continue;
-
-            const isBusy = busyPeriods.some(b => slotStartUtc < b.end && slotEndUtc > b.start);
-            if (isBusy) continue;
-
-            const { day: d, month: m, hour: h, minute: mi } = utcToBsAs(slotStartUtc);
-
-            slots.push({
-                startISO: slotStartUtc.toISOString(),
-                endISO: slotEndUtc.toISOString(),
-                date: `${year}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
-                time: `${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}`,
-                displayText: formatSlotDisplay(slotStartUtc),
-                durationMinutes,
-            });
+        const errors = freeBusy.data.calendars?.[CALENDAR_ID]?.errors;
+        if (errors?.length) {
+            console.warn('[CALENDAR] ⚠️ Errores en freeBusy:', JSON.stringify(errors));
         }
-    }
 
-    console.log(`[CALENDAR] Slots disponibles generados: ${slots.length}`);
-    if (slots.length > 0) {
-        console.log(`[CALENDAR]   Primero: ${slots[0].displayText}`);
-        console.log(`[CALENDAR]   Último:  ${slots[slots.length - 1].displayText}`);
-    }
+        const busyPeriods = (freeBusy.data.calendars?.[CALENDAR_ID]?.busy ?? []).map(b => ({
+            start: new Date(b.start!),
+            end: new Date(b.end!),
+        }));
 
-    return slots;
+        console.log(`[CALENDAR] Períodos ocupados encontrados: ${busyPeriods.length}`);
+        busyPeriods.forEach(b => {
+            console.log(`[CALENDAR]   Ocupado: ${b.start.toISOString()} → ${b.end.toISOString()}`);
+        });
+
+        const slots: AvailableSlot[] = [];
+        const { day: todayDay } = utcToBsAs(nowUtc);
+
+        for (let day = todayDay; day <= lastDayOfMonth; day++) {
+            const noonUtc = bsAsToUtc(year, month, day, 12, 0);
+            const { dayOfWeek } = utcToBsAs(noonUtc);
+
+            if (!WORK_DAYS.includes(dayOfWeek)) continue;
+
+            for (
+                let minutes = WORK_START_HOUR * 60;
+                minutes + durationMinutes <= WORK_END_HOUR * 60;
+                minutes += durationMinutes
+            ) {
+                const hour = Math.floor(minutes / 60);
+                const minute = minutes % 60;
+
+                const slotStartUtc = bsAsToUtc(year, month, day, hour, minute);
+                const slotEndUtc = new Date(slotStartUtc.getTime() + durationMinutes * 60 * 1000);
+
+                if (slotStartUtc < minBookingUtc) continue;
+
+                const isBusy = busyPeriods.some(b => slotStartUtc < b.end && slotEndUtc > b.start);
+                if (isBusy) continue;
+
+                const { day: d, month: m, hour: h, minute: mi } = utcToBsAs(slotStartUtc);
+
+                slots.push({
+                    startISO: slotStartUtc.toISOString(),
+                    endISO: slotEndUtc.toISOString(),
+                    date: `${year}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+                    time: `${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}`,
+                    displayText: formatSlotDisplay(slotStartUtc),
+                    durationMinutes,
+                });
+            }
+        }
+
+        console.log(`[CALENDAR] Slots disponibles generados: ${slots.length}`);
+        if (slots.length > 0) {
+            console.log(`[CALENDAR]   Primero: ${slots[0].displayText}`);
+            console.log(`[CALENDAR]   Último:  ${slots[slots.length - 1].displayText}`);
+        }
+
+        // Si Google Calendar no devolvió slots, hacer fallback a API REST
+        if (slots.length === 0) {
+            console.log('[CALENDAR] ⚠️ Google Calendar no devolvió slots. Intentando API REST como fallback...');
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            const todayStr = today.toISOString().split('T')[0];
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+            const [todaySlots, tomorrowSlots] = await Promise.all([
+                getSlotsFromApiRest(todayStr),
+                getSlotsFromApiRest(tomorrowStr),
+            ]);
+
+            const filtered = [...todaySlots, ...tomorrowSlots].filter(s => s.durationMinutes === durationMinutes);
+            console.log(`[CALENDAR] ✅ Fallback a API REST: ${filtered.length} slots encontrados`);
+            return filtered;
+        }
+
+        return slots;
+    
+    } catch (error: any) {
+        console.error('[CALENDAR] ❌ ERROR en getAvailableSlots:', error?.message || error);
+        console.log('[CALENDAR] 🔄 Intentando fallback a API REST...');
+        
+        // En caso de error, hacer fallback a API REST
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const todayStr = today.toISOString().split('T')[0];
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+        const [todaySlots, tomorrowSlots] = await Promise.all([
+            getSlotsFromApiRest(todayStr),
+            getSlotsFromApiRest(tomorrowStr),
+        ]);
+
+        const filtered = [...todaySlots, ...tomorrowSlots].filter(s => s.durationMinutes === durationMinutes);
+        console.log(`[CALENDAR] ✅ Fallback exitoso: ${filtered.length} slots desde API REST`);
+        return filtered;
+    }
 }
 
 /**

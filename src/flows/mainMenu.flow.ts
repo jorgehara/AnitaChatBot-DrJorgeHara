@@ -21,7 +21,9 @@ export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(EVENTS.WELCOME)
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log('[MENU] 🚀 MENÚ PRINCIPAL ACTIVADO');
         console.log('[MENU] From:', ctx.from);
+        console.log('[MENU] PushName:', ctx.pushName);
         console.log('[MENU] Mensaje:', ctx.body);
+        console.log('[MENU] Timestamp:', ctx.timestamp);
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
         const clientName = await state.get('clientName');
@@ -61,6 +63,10 @@ export const mainMenuFlow = addKeyword<Provider, IDBDatabase>(EVENTS.WELCOME)
             const userMessage = ctx.body.trim();
             console.log('[MENU] 📝 PROCESANDO RESPUESTA DEL USUARIO');
             console.log('[MENU] Mensaje:', userMessage);
+            console.log('[MENU] Estado actual del state:');
+            console.log('  - clientName:', (await state.get('clientName')) || '(vacío)');
+            console.log('  - appointmentType:', (await state.get('appointmentType')) || '(vacío)');
+            console.log('  - slotsCache:', ((await state.get('slotsCache')) || []).length, 'slots');
 
             let intent;
             try {

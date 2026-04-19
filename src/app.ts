@@ -1188,18 +1188,36 @@ const welcomeKeywords = ['hi', 'hello', 'hola', "buenas","hola doctor","hola Doc
 
 const welcomeFlow = addKeyword<Provider, IDBDatabase>(welcomeKeywords)
     .addAction(async (ctx, { state, flowDynamic }) => {
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('[WELCOME] 🚀 WELCOME FLOW ACTIVADO');
+        console.log('[WELCOME] From:', ctx.from);
+        console.log('[WELCOME] Mensaje:', ctx.body);
+        console.log('[WELCOME] PushName:', ctx.pushName);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
         // Solo mostrar bienvenida si NO hay flujo activo ni datos de sobreturno en progreso
         const clientName = state.get('clientName');
         const socialWork = state.get('socialWork');
         const availableSlots = state.get('availableSlots');
         const slotsCache = await state.get('slotsCache');
         const customDateMode = await state.get('customDateMode');
+        
+        console.log('[WELCOME] Estado del flow:');
+        console.log('  - clientName:', clientName || '(vacío)');
+        console.log('  - socialWork:', socialWork || '(vacío)');
+        console.log('  - availableSlots:', availableSlots || '(vacío)');
+        console.log('  - slotsCache:', slotsCache ? `${slotsCache.length} slots` : '(vacío)');
+        console.log('  - customDateMode:', customDateMode || false);
+        
         if (clientName || socialWork || availableSlots || (slotsCache && slotsCache.length > 0) || customDateMode) {
             // Hay un flujo activo, no interrumpir
+            console.log('[WELCOME] ⚠️ Flujo activo detectado, no mostrando bienvenida');
             await state.update({ _welcomeBlocked: true });
             return;
         }
         await state.update({ _welcomeBlocked: false });
+        
+        console.log('[WELCOME] ✅ Sin flujo activo, iniciando proceso de bienvenida...');
         
         try {
             console.log('=== DEBUG WELCOME FLOW CON HORARIOS ===');
@@ -1733,6 +1751,16 @@ export const publicBookingLinkFlow = addKeyword(['bazinga', 'link', 'enlace'])
 */ // FIN DESHABILITADO publicBookingLinkFlow
 
 const main = async () => {
+    console.log('🔧 Registrando flujos del bot...');
+    console.log('[MAIN] Flujos registrados:');
+    console.log('[MAIN]   1. cancelFlow (cancelar, cancel, salir)');
+    console.log('[MAIN]   2. goodbyeFlow (bye, adiós, chao, chau)');
+    console.log('[MAIN]   3. mainMenuFlow (EVENTS.WELCOME)');
+    console.log('[MAIN]   4. newPatientFlow (__new_patient__)');
+    console.log('[MAIN]   5. controlFlow (__control__)');
+    console.log('[MAIN]   6. customDateFlow (__custom_date__)');
+    console.log('[MAIN]   7. adminFlow (!admin, !help)');
+    
     const adapterFlow = createFlow([
         // Flujos principales — nuevo sistema Google Calendar + Haiku
         cancelFlow,          // PRIMERO: captura "cancelar" en cualquier momento
@@ -1744,42 +1772,99 @@ const main = async () => {
         customDateFlow,      // Búsqueda personalizada de fecha
         adminFlow
     ])
+    console.log('[MAIN] ✅ Flujos creados, adapterFlow:', adapterFlow ? 'EXISTS' : 'NULL');
 
     console.log('🔧 Creando adapter del provider (WhatsApp)...');
-    const adapterProvider = createProvider(Provider, {
-        version: [2, 3000, 1031870451] as any
-    })
-    console.log('✅ Adapter del provider creado');
+console.log('[MAIN] Provider version:', JSON.stringify([2, 3000, 1031870451]));
+const adapterProvider = createProvider(Provider, {
+    version: [2, 3000, 1031870451] as any
+})
+console.log('✅ Adapter del provider creado');
+console.log('[MAIN] Adapter Provider instance:', adapterProvider ? 'EXISTS' : 'NULL');
     // const adapterProvider = createProvider(Provider)
 
     console.log('🔧 Conectando a MongoDB...');
-    const adapterDB = new Database({
-        dbUri: APP_CONFIG.MONGO_DB_URI,
-        dbName: APP_CONFIG.MONGO_DB_NAME,
-    })
-    console.log('✅ MongoDB conectado');
+console.log('[MAIN] MongoDB URI:', APP_CONFIG.MONGO_DB_URI);
+console.log('[MAIN] MongoDB Name:', APP_CONFIG.MONGO_DB_NAME);
+const adapterDB = new Database({
+    dbUri: APP_CONFIG.MONGO_DB_URI,
+    dbName: APP_CONFIG.MONGO_DB_NAME,
+})
+console.log('✅ MongoDB conectado');
+console.log('[MAIN] Adapter DB instance:', adapterDB ? 'EXISTS' : 'NULL');
 
     console.log('🔧 Creando bot...');
-    const { handleCtx, httpServer } = await createBot({
-        flow: adapterFlow,
-        provider: adapterProvider,
-        database: adapterDB,
-    })
+    console.log('[MAIN] Flow adapter:', adapterFlow ? 'EXISTS' : 'NULL');
+    console.log('[MAIN] Provider adapter:', adapterProvider ? 'EXISTS' : 'NULL');
+    console.log('[MAIN] Database adapter:', adapterDB ? 'EXISTS' : 'NULL');
+    
+    let handleCtxRef: any = null;
+    let httpServerRef: any = null;
+    
+    try {
+        const result = await createBot({
+            flow: adapterFlow,
+            provider: adapterProvider,
+            database: adapterDB,
+        })
+        console.log('[MAIN] ✅ Bot creado, result keys:', Object.keys(result));
+        handleCtxRef = result.handleCtx;
+        httpServerRef = result.httpServer;
+        console.log('[MAIN] handleCtx:', handleCtxRef ? 'EXISTS' : 'NULL');
+        console.log('[MAIN] httpServer:', httpServerRef ? 'EXISTS' : 'NULL');
+    } catch (botError) {
+        console.error('[MAIN] ❌ ERROR al crear bot:', botError);
+        console.error('[MAIN] Stack:', botError?.stack);
+        throw botError;
+    }
+    
+    const { handleCtx, httpServer } = { handleCtx: handleCtxRef, httpServer: httpServerRef };
     console.log('✅ Bot creado exitosamente');
 
     adapterProvider.server.post(
         '/v1/messages',
         handleCtx(async (bot, req, res) => {
-            const { number, message, urlMedia } = req.body
             console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             console.log('[HTTP /v1/messages] 📩 MENSAJE RECIBIDO');
-            console.log('[HTTP /v1/messages] From:', number);
-            console.log('[HTTP /v1/messages] Message:', message);
+            console.log('[HTTP /v1/messages] Body:', JSON.stringify(req.body));
+            console.log('[HTTP /v1/messages] From:', req.body?.number);
+            console.log('[HTTP /v1/messages] Message:', req.body?.message);
             console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            await bot.sendMessage(number, message, { media: urlMedia ?? null })
+            
+            const { number, message, urlMedia } = req.body
+            
+            console.log('[HTTP /v1/messages] Bot instance:', bot ? 'EXISTS' : 'NULL');
+            console.log('[HTTP /v1/messages] Sending message to:', number);
+            
+            try {
+                await bot.sendMessage(number, message, { media: urlMedia ?? null })
+                console.log('[HTTP /v1/messages] ✅ Mensaje enviado exitosamente');
+            } catch (sendError) {
+                console.error('[HTTP /v1/messages] ❌ Error al enviar:', sendError);
+                console.error('[HTTP /v1/messages] Stack:', sendError?.stack);
+            }
+            
             return res.end('sended')
         })
     )
+
+    adapterProvider.server.get('/v1/qr', async (req, res) => {
+        console.log('[HTTP /v1/qr] Solicitando código QR...');
+        if (adapterProvider && typeof adapterProvider.getQrImage === 'function') {
+            try {
+                const qrImage = await adapterProvider.getQrImage();
+                console.log('[HTTP /v1/qr] QR disponible, longitud:', qrImage.length);
+                res.setHeader('Content-Type', 'image/png');
+                res.send(qrImage);
+            } catch (qrError) {
+                console.error('[HTTP /v1/qr] ❌ Error al obtener QR:', qrError);
+                res.status(500).json({ error: 'QR no disponible' });
+            }
+        } else {
+            console.log('[HTTP /v1/qr] ⚠️ Provider no tiene getQrImage');
+            res.status(503).json({ error: 'QR no disponible en este momento' });
+        }
+    });
 
     adapterProvider.server.post(
         '/v1/register',
@@ -1869,12 +1954,50 @@ const main = async () => {
         })
     )
 
-    console.log('🚀 Iniciando servidor HTTP en puerto:', PORT);
-    httpServer(+PORT)
-    console.log('✅ Servidor HTTP iniciado correctamente');
+    // Iniciar el servidor Express en el puerto 3009
+    console.log('🚀 Iniciando servidor Express en puerto:', expressPort);
+    app.listen(expressPort, () => {
+        console.log('✅ Servidor Express iniciado en puerto', expressPort);
+        console.log('[EXPRESS] Endpoints:');
+        console.log('[EXPRESS]   GET  /pdfs/* - Archivos PDF');
+        console.log('[EXPRESS]   POST /v1/messages - Enviar mensajes');
+        console.log('[EXPRESS]   POST /v1/register - Registrar');
+        console.log('[EXPRESS]   POST /v1/samples - Samples');
+        console.log('[EXPRESS]   POST /v1/blacklist - Blacklist');
+        console.log('[EXPRESS]   POST /api/notify-appointment - Notificaciones');
+    });
+
+    // Iniciar el servidor HTTP del bot
+    console.log('🚀 Iniciando servidor HTTP del bot en puerto:', PORT);
+    if (!httpServer) {
+        console.error('❌ httpServer es null - no se puede iniciar');
+    } else {
+        try {
+            httpServer(+PORT);
+            console.log('✅ Servidor HTTP del bot iniciado correctamente');
+        } catch (httpError) {
+            console.error('❌ Error al iniciar httpServer:', httpError);
+        }
+    }
+    
+    // Logs de состояние
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('[INIT] ✅ Bot listo para recibir mensajes');
+    console.log('[INIT] Esperando conexión de WhatsApp...');
+    console.log('[INIT] Escaneá el código QR cuando aparezca');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 }
 
 console.log('📝 Llamando a la función main()...');
+console.log('[MAIN] Variables de entorno importantes:');
+console.log('[MAIN]   PORT:', PORT);
+console.log('[MAIN]   API_URL:', API_URL);
+console.log('[MAIN]   CHATBOT_API_KEY:', CHATBOT_API_KEY ? '*** DEFINIDA ***' : '❌ NO DEFINIDA');
+console.log('[MAIN]   TENANT_SUBDOMAIN:', process.env.TENANT_SUBDOMAIN || '(no definida)');
+console.log('[MAIN]   MONGO_DB_URI:', APP_CONFIG.MONGO_DB_URI ? '*** DEFINIDA ***' : '❌ NO DEFINIDA');
+console.log('[MAIN]   GOOGLE_CALENDAR_ID:', process.env.GOOGLE_CALENDAR_ID ? '*** DEFINIDA ***' : '(no configurado - usará fallback)');
+console.log('[MAIN]   ANTHROPIC_API_KEY:', process.env.ANTHROPIC_API_KEY ? '*** DEFINIDA ***' : '❌ NO DEFINIDA');
+
 main().then(() => {
     console.log('✅ main() completada exitosamente');
 }).catch((error) => {
