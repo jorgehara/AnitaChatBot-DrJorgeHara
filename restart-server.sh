@@ -14,8 +14,5 @@ ulimit -n 65536
 # Ir al directorio del proyecto
 cd ~/AnitaChatBot-DrJorgeHara
 
-# Compilar TypeScript
-npm run build
-
-# Iniciar en modo producción — NO background (PM2 maneja el proceso)
-node dist/src/app.js
+# Iniciar con tsx (resuelve ESM de @builderbot/bot correctamente)
+npx tsx ./src/app.ts

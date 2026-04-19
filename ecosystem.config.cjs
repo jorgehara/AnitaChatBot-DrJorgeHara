@@ -1,8 +1,8 @@
 module.exports = {
   apps: [{
     name: 'chatbot-drjorgehara',
-    script: '/root/.nvm/versions/node/v22.16.0/bin/node',
-    args: '/root/AnitaChatBot-DrJorgeHara/dist/src/app.js',
+    script: '/root/AnitaChatBot-DrJorgeHara/node_modules/.bin/tsx',
+    args: '/root/AnitaChatBot-DrJorgeHara/src/app.ts',
     cwd: '/root/AnitaChatBot-DrJorgeHara',
     env_production: {
       NODE_ENV: 'production'
