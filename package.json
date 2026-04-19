@@ -2,7 +2,7 @@
   "name": "anitachatbot-drjorgehara",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/app.js",
+  "main": "dist/src/app.js",
   "type": "module",
   "scripts": {
     "start": "tsx ./src/app.ts",
@@ -11,7 +11,7 @@
     "lint": "eslint . --no-ignore",
     "dev": "nodemon",
     "build": "tsc",
-    "pm2:start": "pm2 start dist/app.js --name chatbot-drjorgehara",
+    "pm2:start": "pm2 start dist/src/app.js --name chatbot-drjorgehara",
     "pm2:stop": "pm2 stop chatbot-drjorgehara",
     "pm2:restart": "pm2 restart chatbot-drjorgehara",
     "pm2:delete": "pm2 delete chatbot-drjorgehara",

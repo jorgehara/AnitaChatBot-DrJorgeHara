@@ -14,5 +14,8 @@ ulimit -n 65536
 # Ir al directorio del proyecto
 cd ~/AnitaChatBot-DrJorgeHara
 
-# Iniciar en modo producción (SIN nodemon — PM2 maneja restarts)
-npm run start
+# Compilar TypeScript
+npm run build
+
+# Iniciar en modo producción — NO background (PM2 maneja el proceso)
+node dist/src/app.js
