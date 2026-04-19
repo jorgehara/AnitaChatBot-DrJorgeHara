@@ -12,6 +12,8 @@ module.exports = {
     },
     autorestart: true,
     max_restarts: 10,
-    min_uptime: 5000
+    min_uptime: 5000,
+    kill_timeout: 5000,
+    listen_timeout: 15000
   }]
 };
