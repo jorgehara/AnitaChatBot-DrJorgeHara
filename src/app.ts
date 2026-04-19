@@ -1736,14 +1736,12 @@ const main = async () => {
     const adapterFlow = createFlow([
         // Flujos principales — nuevo sistema Google Calendar + Haiku
         cancelFlow,          // PRIMERO: captura "cancelar" en cualquier momento
-        welcomeFlow,         // Keywords: hola, hello, turnos, turno
-        mainMenuFlow,        // Menú de bienvenida con 3 opciones
+        goodbyeFlow,         // Keywords: bye, chau, etc.
+        // welcomeFlow DESHABILITADO: usaba REST API legacy y bloqueaba mainMenuFlow
+        mainMenuFlow,        // EVENTS.WELCOME — único punto de entrada
         newPatientFlow,      // Flujo paciente nueva consulta (60 min)
         controlFlow,         // Flujo control/seguimiento (30 o 60 min)
         customDateFlow,      // Búsqueda personalizada de fecha
-        // Legacy (sin registrar en el nuevo flujo pero se mantienen)
-        clientDataFlow,
-        goodbyeFlow,
         adminFlow
     ])
 
