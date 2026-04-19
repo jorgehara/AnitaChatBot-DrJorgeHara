@@ -1850,9 +1850,9 @@ console.log('[MAIN] Adapter DB instance:', adapterDB ? 'EXISTS' : 'NULL');
 
     adapterProvider.server.get('/v1/qr', async (req, res) => {
         console.log('[HTTP /v1/qr] Solicitando código QR...');
-        if (adapterProvider && typeof adapterProvider.getQrImage === 'function') {
+        if (adapterProvider && typeof (adapterProvider as any).getQrImage === 'function') {
             try {
-                const qrImage = await adapterProvider.getQrImage();
+                const qrImage = await (adapterProvider as any).getQrImage();
                 console.log('[HTTP /v1/qr] QR disponible, longitud:', qrImage.length);
                 res.setHeader('Content-Type', 'image/png');
                 res.send(qrImage);
