@@ -3,7 +3,6 @@ module.exports = {
     name: 'chatbot-drjorgehara',
     script: '/root/.nvm/versions/node/v22.16.0/bin/node',
     args: '/root/AnitaChatBot-DrJorgeHara/dist/src/app.js',
-    interpreter: 'none',
     cwd: '/root/AnitaChatBot-DrJorgeHara',
     env_production: {
       NODE_ENV: 'production'
