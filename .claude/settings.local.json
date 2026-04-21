@@ -12,7 +12,17 @@
       "Bash(npm run lint:*)",
       "Bash(npx tsx:*)",
       "mcp__plugin_engram_engram__mem_save",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Skill(builderbot)",
+      "Skill(skill-vps-deploy)",
+      "Bash(git push *)",
+      "Bash(ssh *)",
+      "Bash(tailscale status *)",
+      "Bash(xargs grep *)",
+      "Bash(scp /tmp/deploy-drjorgehara.sh root@srv838272.hstgr.cloud:/tmp/deploy-drjorgehara.sh)",
+      "Bash(powershell.exe *)",
+      "Bash(rm -rf \"/c/Users/JorgeHaraDevs/Desktop/go-telegram-opencode-bridge\")",
+      "Bash(rm -rf \"/c/Users/JorgeHaraDevs/Desktop/opencode-telegram-bridge\")"
     ],
     "deny": [],
     "ask": []
